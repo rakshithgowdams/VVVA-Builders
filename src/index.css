@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --vvva-orange:       #FF5500;
+  --vvva-orange-dark:  #CC4400;
+  --vvva-orange-light: #FF8855;
+  --vvva-black:        #1A1A1A;
+  --vvva-warm-white:   #F5F3EF;
+  --vvva-sand:         #E8E4DC;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--vvva-warm-white);
+  color: var(--vvva-black);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Playfair Display', serif;
+}
+
+/* Leaflet map z-index fix */
+.leaflet-container {
+  z-index: 1;
+}
+
+/* Slot panel accordion */
+.slot-panel-enter {
+  max-height: 0;
+  overflow: hidden;
+}
+.slot-panel-open {
+  max-height: 600px;
+  transition: max-height 0.4s ease;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--vvva-sand);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--vvva-orange);
+  border-radius: 3px;
+}
+
+/* Page transition wrapper */
+.page-transition {
+  animation: fadeInUp 0.4s ease forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
