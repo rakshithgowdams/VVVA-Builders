@@ -174,6 +174,45 @@ Deno.serve(async (req: Request) => {
           email: normalizedEmail,
         });
 
+        // Send admin creation notification email
+        const resendKey = Deno.env.get("RESEND_API_KEY");
+        const notifyEmail = Deno.env.get("ADMIN_NOTIFICATION_EMAIL");
+        if (resendKey && notifyEmail) {
+          const createdAt = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+          await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${resendKey}`,
+            },
+            body: JSON.stringify({
+              from: "VVVA Developer <noreply@vvvadeveloper.com>",
+              to: [notifyEmail],
+              subject: "New Admin Account Created — VVVA Developer",
+              html: `
+                <div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 32px; background: #fff; border-radius: 12px; border: 1px solid #eee;">
+                  <div style="text-align:center; margin-bottom: 28px;">
+                    <span style="background:#FF5500; color:white; font-size:18px; font-weight:bold; padding: 8px 20px; border-radius:8px;">VVVA Developer</span>
+                  </div>
+                  <h2 style="color:#1a1a1a; margin-bottom:8px;">New Admin Account Created</h2>
+                  <p style="color:#555; margin-bottom:20px;">A new admin account has been successfully registered on the VVVA Developer platform.</p>
+                  <table style="width:100%; border-collapse:collapse; background:#f9f9f9; border-radius:8px; overflow:hidden;">
+                    <tr>
+                      <td style="padding:12px 16px; color:#888; font-size:13px; width:40%;">Email</td>
+                      <td style="padding:12px 16px; color:#1a1a1a; font-weight:600; font-size:14px;">${normalizedEmail}</td>
+                    </tr>
+                    <tr style="border-top:1px solid #eee;">
+                      <td style="padding:12px 16px; color:#888; font-size:13px;">Created At</td>
+                      <td style="padding:12px 16px; color:#1a1a1a; font-size:14px;">${createdAt} IST</td>
+                    </tr>
+                  </table>
+                  <p style="color:#999; font-size:12px; margin-top:24px;">If you did not authorize this account creation, please review your admin access immediately.</p>
+                </div>
+              `,
+            }),
+          }).catch((err) => console.error("Notification email failed:", err));
+        }
+
         // Create a session
         const { data: sessionData, error: sessionError } = await supabaseAdmin.auth.admin.generateLink({
           type: "magiclink",
