@@ -63,9 +63,16 @@ export default function ProjectsSection() {
     ['open', 'future', 'closed', 'all'].includes(statusParam) ? statusParam : 'all'
   );
 
-  const loadProjects = useCallback(() => {
+  const loadProjects = useCallback((isRetry = false) => {
+    if (isRetry) {
+      setError(null);
+      setLoading(true);
+    }
     fetchAllProjectsWithDetails()
-      .then(data => setProjects(data.map(mapDbProject)))
+      .then(data => {
+        setProjects(data.map(mapDbProject));
+        setError(null);
+      })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
@@ -164,7 +171,7 @@ export default function ProjectsSection() {
           <div className="text-center py-16">
             <p className="text-red-500 text-sm mb-4">Failed to load projects. Please try again.</p>
             <button
-              onClick={() => { setError(null); setLoading(true); loadProjects(); }}
+              onClick={() => loadProjects(true)}
               className="border-2 border-vvva-orange text-vvva-orange hover:bg-vvva-orange hover:text-white font-semibold px-6 py-2 rounded-btn transition-all duration-200 text-sm"
             >
               Retry

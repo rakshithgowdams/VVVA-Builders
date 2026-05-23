@@ -69,12 +69,17 @@ const PROJECT_SELECT = `
   plot_slots ( id, project_id, bite_no, dimensions, sqft, direction, status, price_lakhs, details, created_at, updated_at )
 `;
 
+function isTransientError(msg: string) {
+  const lower = msg.toLowerCase();
+  return lower.includes('schema cache') || lower.includes('fetching') || lower.includes('network');
+}
+
 export async function fetchAllProjectsWithDetails(): Promise<Project[]> {
   let { data, error } = await supabase.from('projects').select(PROJECT_SELECT).order('id');
 
-  // Retry once on transient schema cache errors
-  if (error && error.message.toLowerCase().includes('schema cache')) {
-    await new Promise((r) => setTimeout(r, 1500));
+  // Retry up to 3 times on transient errors (schema cache, network blips on cold start)
+  for (let attempt = 1; attempt <= 3 && error && isTransientError(error.message); attempt++) {
+    await new Promise((r) => setTimeout(r, attempt * 1000));
     ({ data, error } = await supabase.from('projects').select(PROJECT_SELECT).order('id'));
   }
 
