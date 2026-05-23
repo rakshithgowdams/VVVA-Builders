@@ -177,6 +177,67 @@ export async function deleteProjectImage(imageId: number): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
+export interface ProjectInput {
+  name: string;
+  location: string;
+  status: ProjectStatus;
+  description: string;
+  card_image_url: string;
+  site_layout_image_url: string;
+  hero_image_url: string;
+  price_range: string;
+  rera_number: string;
+  total_area_acres: number;
+  launch_date: string | null;
+  map_lat: number | null;
+  map_lng: number | null;
+  google_maps_url: string;
+}
+
+export async function createProject(input: ProjectInput): Promise<Project> {
+  const { data, error } = await supabase
+    .from('projects')
+    .insert({ ...input, updated_at: new Date().toISOString() })
+    .select()
+    .single();
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function updateProject(id: number, input: Partial<ProjectInput>): Promise<void> {
+  const { error } = await supabase
+    .from('projects')
+    .update({ ...input, updated_at: new Date().toISOString() })
+    .eq('id', id);
+  if (error) throw new Error(error.message);
+}
+
+export async function deleteProject(id: number): Promise<void> {
+  const { error } = await supabase.from('projects').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+}
+
+export interface PlotSlotInput {
+  project_id: number;
+  bite_no: number;
+  dimensions: string;
+  sqft: number;
+  direction: string;
+  status: PlotStatus;
+  price_lakhs: number;
+  details: string;
+}
+
+export async function addPlotSlot(input: PlotSlotInput): Promise<void> {
+  const { error } = await supabase.from('plot_slots').insert(input);
+  if (error) throw new Error(error.message);
+}
+
+export async function deletePlotSlot(slotId: number): Promise<void> {
+  const { error } = await supabase.from('plot_slots').delete().eq('id', slotId);
+  if (error) throw new Error(error.message);
+}
+
 export async function updateProjectGoogleMapsUrl(projectId: number, google_maps_url: string): Promise<void> {
   const { error } = await supabase
     .from('projects')
