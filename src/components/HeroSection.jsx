@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
+import { fetchSiteImageByKey } from '../lib/db';
 
 function CountUp({ target, suffix = '', duration = 1800 }) {
   const [display, setDisplay] = useState(0);
@@ -32,6 +33,13 @@ function CountUp({ target, suffix = '', duration = 1800 }) {
 
 export default function HeroSection() {
   const heroRef = useRef(null);
+  const [heroImg, setHeroImg] = useState({ url: '', alt: '' });
+
+  useEffect(() => {
+    fetchSiteImageByKey('hero_background')
+      .then(img => { if (img) setHeroImg({ url: img.url, alt: img.alt }); })
+      .catch(() => {});
+  }, []);
 
   const scrollToProjects = () => {
     const el = document.getElementById('projects');
@@ -44,12 +52,14 @@ export default function HeroSection() {
       className="relative w-full min-h-screen flex items-center justify-center overflow-hidden"
     >
       {/* Hero background image */}
-      <img
-        src="/vvva-builder-hero.jpg"
-        alt=""
-        aria-hidden="true"
-        className="absolute inset-0 w-full h-full object-cover object-center"
-      />
+      {heroImg.url && (
+        <img
+          src={heroImg.url}
+          alt={heroImg.alt || ''}
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
+      )}
 
       {/* Dark gradient overlay for readability */}
       <div className="absolute inset-0 bg-gradient-to-r from-stone-950/85 via-stone-950/60 to-stone-950/40" />

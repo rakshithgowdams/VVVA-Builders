@@ -184,3 +184,33 @@ export async function updateProjectGoogleMapsUrl(projectId: number, google_maps_
     .eq('id', projectId);
   if (error) throw new Error(error.message);
 }
+
+// ── Site Images ────────────────────────────────────────────────────────────────
+
+export interface SiteImage {
+  id: number;
+  key: string;
+  url: string;
+  alt: string;
+  section: string;
+  display_order: number;
+}
+
+export async function fetchSiteImages(): Promise<SiteImage[]> {
+  const { data, error } = await supabase
+    .from('site_images')
+    .select('id, key, url, alt, section, display_order')
+    .order('display_order');
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
+
+export async function fetchSiteImageByKey(key: string): Promise<SiteImage | null> {
+  const { data, error } = await supabase
+    .from('site_images')
+    .select('id, key, url, alt, section, display_order')
+    .eq('key', key)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data;
+}
