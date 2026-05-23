@@ -1,25 +1,23 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import {
-  Award, Eye, Heart, Users, MapPin, TrendingUp,
-  CheckCircle, Quote, Briefcase, Star,
-} from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrophy, faEye, faHeart, faUsers, faLocationDot, faArrowTrendUp, faCircleCheck, faQuoteLeft, faBriefcase, faStar } from '@fortawesome/free-solid-svg-icons';
 import StatCard from '../components/StatCard.jsx';
 
 const VALUES = [
   {
-    icon: Award,
+    icon: faTrophy,
     title: 'Quality',
     description: 'Every plot we develop meets the highest standards of infrastructure, documentation, and approvals.',
   },
   {
-    icon: Eye,
+    icon: faEye,
     title: 'Transparency',
     description: 'Clear pricing, honest timelines, and full documentation. No hidden costs or surprises.',
   },
   {
-    icon: Heart,
+    icon: faHeart,
     title: 'Trust',
     description: 'Built on relationships, not transactions. Our clients return and refer us because we earn their trust.',
   },
@@ -174,9 +172,9 @@ export default function About() {
             <h2 className="font-playfair font-bold text-2xl sm:text-3xl text-vvva-black">VVVA Developer in Numbers</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <StatCard value="10+" label="Years Experience" icon={TrendingUp} />
-            <StatCard value="50+" label="Projects Completed" icon={MapPin} />
-            <StatCard value="500+" label="Happy Families" icon={Users} />
+            <StatCard value="10+" label="Years Experience" icon={faArrowTrendUp} />
+            <StatCard value="50+" label="Projects Completed" icon={faLocationDot} />
+            <StatCard value="500+" label="Happy Families" icon={faUsers} />
           </div>
         </div>
       </section>
@@ -227,7 +225,7 @@ export default function About() {
                   className="flex gap-6 items-start"
                 >
                   <div className="flex-shrink-0 w-12 h-12 rounded-full bg-vvva-orange flex items-center justify-center shadow-md shadow-vvva-orange/20 relative z-10">
-                    <CheckCircle size={20} className="text-white" />
+                    <FontAwesomeIcon icon={faCircleCheck} className="text-white text-lg" />
                   </div>
                   <div className="bg-white rounded-card p-5 border border-vvva-sand hover:border-vvva-orange/30 hover:shadow-sm transition-all duration-200 flex-1">
                     <div className="flex items-center gap-3 mb-2">
@@ -271,7 +269,7 @@ export default function About() {
                 </div>
                 <h3 className="font-playfair font-semibold text-lg text-vvva-black">{emp.name}</h3>
                 <div className="flex items-center gap-1.5 mt-1 mb-3">
-                  <Briefcase size={12} className="text-vvva-orange" />
+                  <FontAwesomeIcon icon={faBriefcase} className="text-vvva-orange text-xs" />
                   <span className="text-xs font-semibold text-vvva-orange">{emp.role}</span>
                 </div>
                 <p className="text-xs text-gray-400">{emp.exp}</p>
@@ -299,10 +297,10 @@ export default function About() {
             transition={{ duration: 0.35 }}
             className="bg-white/5 border border-white/10 rounded-card p-8 mb-6 relative"
           >
-            <Quote size={32} className="text-vvva-orange/30 absolute top-6 left-6" />
+            <FontAwesomeIcon icon={faQuoteLeft} className="text-vvva-orange/30 absolute top-6 left-6 text-3xl" />
             <div className="flex gap-1 mb-4 ml-10">
               {Array.from({ length: TESTIMONIALS[activeQuote].rating }).map((_, i) => (
-                <Star key={i} size={14} className="text-amber-400 fill-amber-400" />
+                <FontAwesomeIcon key={i} icon={faStar} className="text-amber-400 text-sm" />
               ))}
             </div>
             <p className="text-white/80 text-base leading-relaxed mb-6 ml-10">
@@ -347,7 +345,7 @@ export default function About() {
             </h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {VALUES.map(({ icon: Icon, title, description }, i) => (
+            {VALUES.map(({ icon, title, description }, i) => (
               <motion.div
                 key={title}
                 initial={{ opacity: 0, y: 20 }}
@@ -357,7 +355,7 @@ export default function About() {
                 className="bg-white rounded-card p-6 border border-vvva-sand hover:border-vvva-orange/40 hover:shadow-md transition-all duration-200"
               >
                 <div className="w-12 h-12 bg-vvva-orange/10 rounded-card flex items-center justify-center mb-4">
-                  <Icon size={22} className="text-vvva-orange" />
+                  <FontAwesomeIcon icon={icon} className="text-vvva-orange text-xl" />
                 </div>
                 <h3 className="font-playfair font-semibold text-xl text-vvva-black mb-3">{title}</h3>
                 <p className="text-sm text-gray-500 leading-relaxed">{description}</p>

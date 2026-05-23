@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { LogOut, LayoutDashboard, MapPin, BarChart2, Users, MessageSquare, ChevronDown, Trash2, Plus, X, ExternalLink, Check } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faRightFromBracket, faTableColumns, faLocationDot, faChartBar, faUsers, faMessage, faChevronDown, faTrash, faPlus, faXmark, faArrowUpRightFromSquare, faCheck } from '@fortawesome/free-solid-svg-icons';
 import { signOut, getAdminSession } from '../../lib/adminAuth';
 import { fetchAllProjectsWithDetails, fetchEnquiries, updateEnquiryStatus, addProjectImage, deleteProjectImage, updatePlotStatus, updateProjectGoogleMapsUrl } from '../../lib/db';
 
@@ -23,7 +24,7 @@ const PLOT_BADGE = {
   sold: 'bg-stone-100 text-stone-500',
 };
 
-function StatCard({ label, value, icon: Icon, color, delay }) {
+function StatCard({ label, value, icon, color, delay }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -32,7 +33,7 @@ function StatCard({ label, value, icon: Icon, color, delay }) {
       className="bg-white rounded-xl border border-stone-100 p-5 shadow-sm"
     >
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${color}`}>
-        <Icon size={18} />
+        <FontAwesomeIcon icon={icon} className="text-base" />
       </div>
       <p className="text-2xl font-bold text-stone-800">{value}</p>
       <p className="text-xs text-stone-400 mt-0.5">{label}</p>
@@ -65,7 +66,7 @@ function AddImageModal({ projectId, onClose, onAdded }) {
       <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
         <div className="flex items-center justify-between mb-5">
           <h3 className="font-semibold text-stone-800">Add Project Image</h3>
-          <button onClick={onClose} className="text-stone-400 hover:text-stone-600"><X size={18} /></button>
+          <button onClick={onClose} className="text-stone-400 hover:text-stone-600"><FontAwesomeIcon icon={faXmark} /></button>
         </div>
         <div className="space-y-4">
           <div>
@@ -134,7 +135,7 @@ function GoogleMapsEditor({ project, onSaved }) {
             rel="noopener noreferrer"
             className="flex items-center gap-1 text-xs text-blue-500 hover:text-blue-700"
           >
-            <ExternalLink size={11} /> Preview
+            <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="text-xs" /> Preview
           </a>
         )}
       </div>
@@ -156,7 +157,7 @@ function GoogleMapsEditor({ project, onSaved }) {
               : 'bg-vvva-orange hover:bg-vvva-orange-dark text-white disabled:opacity-60'
           }`}
         >
-          {saved ? <><Check size={13} /> Saved</> : saving ? 'Saving…' : 'Save'}
+          {saved ? <><FontAwesomeIcon icon={faCheck} className="text-xs" /> Saved</> : saving ? 'Saving…' : 'Save'}
         </button>
       </div>
       {err && <p className="text-xs text-red-500 mt-1.5">{err}</p>}
@@ -224,9 +225,9 @@ export default function AdminDashboard() {
   const newEnquiries = enquiries.filter(e => e.status === 'new').length;
 
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-    { id: 'projects', label: 'Projects', icon: MapPin },
-    { id: 'enquiries', label: `Enquiries${newEnquiries > 0 ? ` (${newEnquiries})` : ''}`, icon: MessageSquare },
+    { id: 'overview', label: 'Overview', icon: faTableColumns },
+    { id: 'projects', label: 'Projects', icon: faLocationDot },
+    { id: 'enquiries', label: `Enquiries${newEnquiries > 0 ? ` (${newEnquiries})` : ''}`, icon: faMessage },
   ];
 
   return (
@@ -246,13 +247,13 @@ export default function AdminDashboard() {
             onClick={handleSignOut}
             className="flex items-center gap-2 text-sm text-stone-500 hover:text-red-500 border border-stone-200 hover:border-red-200 px-3 py-1.5 rounded-lg transition-colors"
           >
-            <LogOut size={14} /> Sign out
+            <FontAwesomeIcon icon={faRightFromBracket} className="text-sm" /> Sign out
           </button>
         </div>
 
         {/* Tabs */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex gap-1 pb-0">
-          {tabs.map(({ id, label, icon: Icon }) => (
+          {tabs.map(({ id, label, icon }) => (
             <button
               key={id}
               onClick={() => setActiveTab(id)}
@@ -262,7 +263,7 @@ export default function AdminDashboard() {
                   : 'border-transparent text-stone-400 hover:text-stone-600'
               }`}
             >
-              <Icon size={14} />
+              <FontAwesomeIcon icon={icon} className="text-sm" />
               {label}
             </button>
           ))}
@@ -276,11 +277,11 @@ export default function AdminDashboard() {
           <div>
             <h2 className="font-playfair font-bold text-2xl text-stone-800 mb-6">Dashboard Overview</h2>
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-              <StatCard label="Total Projects" value={projects.length} icon={MapPin} color="bg-blue-50 text-blue-600" delay={0} />
-              <StatCard label="Total Plots" value={totalPlots} icon={BarChart2} color="bg-orange-50 text-vvva-orange" delay={0.05} />
-              <StatCard label="Available" value={available} icon={LayoutDashboard} color="bg-green-50 text-green-600" delay={0.1} />
-              <StatCard label="Booked / Sold" value={booked + sold} icon={Users} color="bg-stone-100 text-stone-600" delay={0.15} />
-              <StatCard label="New Enquiries" value={newEnquiries} icon={MessageSquare} color="bg-orange-50 text-orange-600" delay={0.2} />
+              <StatCard label="Total Projects" value={projects.length} icon={faLocationDot} color="bg-blue-50 text-blue-600" delay={0} />
+              <StatCard label="Total Plots" value={totalPlots} icon={faChartBar} color="bg-orange-50 text-vvva-orange" delay={0.05} />
+              <StatCard label="Available" value={available} icon={faTableColumns} color="bg-green-50 text-green-600" delay={0.1} />
+              <StatCard label="Booked / Sold" value={booked + sold} icon={faUsers} color="bg-stone-100 text-stone-600" delay={0.15} />
+              <StatCard label="New Enquiries" value={newEnquiries} icon={faMessage} color="bg-orange-50 text-orange-600" delay={0.2} />
             </div>
 
             {/* Projects summary table */}
@@ -340,7 +341,7 @@ export default function AdminDashboard() {
                     </div>
                     <div className="flex items-center gap-3">
                       <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full uppercase ${STATUS_BADGE[p.status]}`}>{p.status}</span>
-                      <ChevronDown size={16} className={`text-stone-400 transition-transform ${expandedProject === p.id ? 'rotate-180' : ''}`} />
+                      <FontAwesomeIcon icon={faChevronDown} className={`text-stone-400 transition-transform text-sm ${expandedProject === p.id ? 'rotate-180' : ''}`} />
                     </div>
                   </button>
 
@@ -367,7 +368,7 @@ export default function AdminDashboard() {
                             onClick={() => setAddImageForProject(p.id)}
                             className="flex items-center gap-1.5 text-xs text-vvva-orange border border-vvva-orange/30 hover:bg-vvva-orange/5 px-3 py-1.5 rounded-lg transition-colors"
                           >
-                            <Plus size={12} /> Add Image
+                            <FontAwesomeIcon icon={faPlus} className="text-xs" /> Add Image
                           </button>
                         </div>
                         <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
@@ -379,7 +380,7 @@ export default function AdminDashboard() {
                                   onClick={() => handleDeleteImage(img.id)}
                                   className="opacity-0 group-hover:opacity-100 bg-red-500 text-white p-1.5 rounded-lg transition-opacity"
                                 >
-                                  <Trash2 size={12} />
+                                  <FontAwesomeIcon icon={faTrash} className="text-xs" />
                                 </button>
                               </div>
                               {img.caption && (

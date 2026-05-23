@@ -1,7 +1,8 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, MapPin, Navigation, ExternalLink } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowLeft, faLocationDot, faCompass, faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
 import { fetchProjectWithDetails } from '../lib/db';
 import { supabase } from '../lib/supabase';
 import GalleryGrid from '../components/GalleryGrid.jsx';
@@ -113,7 +114,7 @@ export default function ProjectDetail() {
         <div className="absolute inset-0 bg-stone-900/70" />
         <div className="relative z-10 max-w-5xl mx-auto">
           <Link to="/" className="inline-flex items-center gap-2 text-white/50 hover:text-white text-sm transition-colors mb-6">
-            <ArrowLeft size={16} />
+            <FontAwesomeIcon icon={faArrowLeft} />
             All Projects
           </Link>
           <div className="flex flex-wrap items-start gap-4">
@@ -123,7 +124,7 @@ export default function ProjectDetail() {
                 {project.name}
               </motion.h1>
               <div className="flex items-center gap-2 mt-2 text-white/60 text-sm">
-                <MapPin size={14} />
+                <FontAwesomeIcon icon={faLocationDot} className="text-sm" />
                 <span>{project.location}</span>
               </div>
               {project.priceRange && (
@@ -181,7 +182,7 @@ export default function ProjectDetail() {
             <PropertyMap coordinates={project.mapCoordinates} projectName={project.name} />
             <div className="flex flex-wrap items-center gap-4 mt-4 text-sm text-gray-600">
               <div className="flex items-center gap-2">
-                <Navigation size={15} className="text-vvva-orange" />
+                <FontAwesomeIcon icon={faCompass} className="text-vvva-orange text-sm" />
                 <span>{project.location}</span>
               </div>
               <span className="font-mono text-xs text-gray-400">
@@ -194,7 +195,7 @@ export default function ProjectDetail() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-[#1a73e8] hover:bg-[#1558b0] px-3 py-1.5 rounded-btn transition-colors"
                 >
-                  <ExternalLink size={12} />
+                  <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="text-xs" />
                   Open in Google Maps
                 </a>
               )}

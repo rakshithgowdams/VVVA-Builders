@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { ChevronDown } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import { fetchSiteImageByKey } from '../lib/db';
 
 function CountUp({ target, suffix = '', duration = 1800 }) {
@@ -145,7 +146,7 @@ export default function HeroSection() {
           animate={{ y: [0, 6, 0] }}
           transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}
         >
-          <ChevronDown size={28} />
+          <FontAwesomeIcon icon={faChevronDown} className="text-2xl" />
         </motion.div>
       </motion.button>
     </section>

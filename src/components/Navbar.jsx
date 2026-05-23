@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBars, faXmark } from '@fortawesome/free-solid-svg-icons';
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -83,7 +84,7 @@ export default function Navbar() {
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label="Toggle navigation menu"
           >
-            {menuOpen ? <X size={22} /> : <Menu size={22} />}
+            {menuOpen ? <FontAwesomeIcon icon={faXmark} className="text-xl" /> : <FontAwesomeIcon icon={faBars} className="text-xl" />}
           </button>
         </div>
       </div>
@@ -97,7 +98,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between px-5 py-4 border-b border-vvva-sand">
           <span className="font-playfair font-bold text-lg text-vvva-black">Menu</span>
           <button onClick={() => setMenuOpen(false)} aria-label="Close menu">
-            <X size={22} className="text-vvva-black" />
+            <FontAwesomeIcon icon={faXmark} className="text-vvva-black text-xl" />
           </button>
         </div>
         <div className="flex flex-col px-5 py-6 gap-5">

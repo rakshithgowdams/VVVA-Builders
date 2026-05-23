@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { MapPin, ChevronDown } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faLocationDot, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import { motion } from 'framer-motion';
 
 const STATUS_CONFIG = {
@@ -114,7 +115,7 @@ export default function PropertyCard({ project, isExpanded, onClick }) {
               {project.name}
             </h3>
             <div className="flex items-center gap-1 text-gray-400 mb-3">
-              <MapPin size={11} />
+              <FontAwesomeIcon icon={faLocationDot} className="text-xs" />
               <span className="text-[11px]">{project.location}</span>
             </div>
           </div>
@@ -123,7 +124,7 @@ export default function PropertyCard({ project, isExpanded, onClick }) {
             transition={{ duration: 0.2 }}
             className={`shrink-0 mt-0.5 ${isExpanded ? 'text-vvva-orange' : 'text-gray-300 group-hover:text-vvva-orange/50'}`}
           >
-            <ChevronDown size={16} />
+            <FontAwesomeIcon icon={faChevronDown} />
           </motion.div>
         </div>
 

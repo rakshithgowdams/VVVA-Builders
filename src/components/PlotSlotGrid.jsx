@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import SlotInfoPanel from './SlotInfoPanel.jsx';
 
 const SLOT_STYLES = {
@@ -142,7 +143,7 @@ export default function PlotSlotGrid({ slots = [], projectId, siteImage, project
               onClick={loadMore}
               className="mt-5 w-full flex items-center justify-center gap-2 py-3 rounded-card border border-vvva-orange/40 text-vvva-orange text-sm font-semibold hover:bg-vvva-orange/5 active:scale-[0.98] transition-all duration-150"
             >
-              <ChevronDown size={16} />
+              <FontAwesomeIcon icon={faChevronDown} />
               Load More Slots
               <span className="text-xs font-normal text-gray-400 ml-1">
                 ({slots.length - visibleCount} remaining)

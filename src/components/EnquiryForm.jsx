@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, X } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCircleCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { submitEnquiry } from '../lib/db';
 
 function Toast({ message, onClose }) {
@@ -12,10 +13,10 @@ function Toast({ message, onClose }) {
       exit={{ opacity: 0, y: 20 }}
       className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-vvva-black text-white px-5 py-3 rounded-card flex items-center gap-3 shadow-xl"
     >
-      <CheckCircle size={18} className="text-green-400 shrink-0" />
+      <FontAwesomeIcon icon={faCircleCheck} className="text-green-400 shrink-0 text-lg" />
       <span className="text-sm font-medium">{message}</span>
       <button onClick={onClose} className="ml-2 text-white/60 hover:text-white">
-        <X size={16} />
+        <FontAwesomeIcon icon={faXmark} />
       </button>
     </motion.div>
   );

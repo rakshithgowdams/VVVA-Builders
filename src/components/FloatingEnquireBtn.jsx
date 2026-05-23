@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faComment } from '@fortawesome/free-solid-svg-icons';
 
 export default function FloatingEnquireBtn({ heroRef }) {
   const [visible, setVisible] = useState(false);
@@ -34,7 +35,7 @@ export default function FloatingEnquireBtn({ heroRef }) {
           className="fixed bottom-6 right-6 z-40 bg-vvva-orange hover:bg-vvva-orange-dark text-white font-semibold text-sm px-5 py-3 rounded-pill flex items-center gap-2 shadow-lg shadow-vvva-orange/30 transition-colors duration-150 md:hidden"
           aria-label="Enquire Now"
         >
-          <MessageCircle size={16} />
+          <FontAwesomeIcon icon={faComment} />
           Enquire Now
         </motion.button>
       )}

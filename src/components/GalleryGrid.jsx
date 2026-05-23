@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import GalleryModal from './GalleryModal.jsx';
 
 function RealImage({ src, index, onClick }) {
@@ -82,7 +83,7 @@ export default function GalleryGrid({ images = [] }) {
           onClick={loadMore}
           className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-card border border-vvva-orange/40 text-vvva-orange text-sm font-semibold hover:bg-vvva-orange/5 active:scale-[0.98] transition-all duration-150"
         >
-          <ChevronDown size={16} />
+          <FontAwesomeIcon icon={faChevronDown} />
           Load More Photos
           <span className="text-xs font-normal text-gray-400 ml-1">
             ({images.length - visibleCount} remaining)

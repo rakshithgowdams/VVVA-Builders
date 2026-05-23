@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, KeyRound, ArrowRight, RefreshCw, CheckCircle, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEnvelope, faKey, faArrowRight, faRotate, faCircleCheck, faCircleExclamation, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { sendOtp, verifyOtp } from '../../lib/adminAuth';
 import { supabase } from '../../lib/supabase';
 
@@ -167,7 +168,7 @@ export default function AdminAuth() {
                       Email Address
                     </label>
                     <div className="relative">
-                      <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
+                      <FontAwesomeIcon icon={faEnvelope} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-sm" />
                       <input
                         type="email"
                         value={email}
@@ -186,7 +187,7 @@ export default function AdminAuth() {
                     disabled={loading}
                     className="w-full bg-vvva-orange hover:bg-vvva-orange-dark disabled:opacity-60 text-white font-semibold py-3 rounded-xl transition-all duration-150 flex items-center justify-center gap-2 text-sm"
                   >
-                    {loading ? <Spinner /> : <>Send OTP <ArrowRight size={15} /></>}
+                    {loading ? <Spinner /> : <>Send OTP <FontAwesomeIcon icon={faArrowRight} className="text-sm" /></>}
                   </button>
                 </motion.form>
               )}
@@ -204,7 +205,7 @@ export default function AdminAuth() {
                 >
                   <div className="text-center">
                     <div className="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <KeyRound size={22} className="text-vvva-orange" />
+                      <FontAwesomeIcon icon={faKey} className="text-vvva-orange text-xl" />
                     </div>
                     <p className="text-stone-700 text-sm font-medium">OTP sent to</p>
                     <p className="text-vvva-orange font-semibold text-sm mt-0.5">{email}</p>
@@ -241,7 +242,7 @@ export default function AdminAuth() {
                     disabled={loading || otp.join('').length < 6}
                     className="w-full bg-vvva-orange hover:bg-vvva-orange-dark disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition-all duration-150 flex items-center justify-center gap-2 text-sm"
                   >
-                    {loading ? <Spinner /> : <><CheckCircle size={15} /> Verify & {mode === 'signin' ? 'Sign In' : 'Create Account'}</>}
+                    {loading ? <Spinner /> : <><FontAwesomeIcon icon={faCircleCheck} className="text-sm" /> Verify & {mode === 'signin' ? 'Sign In' : 'Create Account'}</>}
                   </button>
 
                   <div className="flex items-center justify-between text-xs text-stone-400 pt-1">
@@ -258,7 +259,7 @@ export default function AdminAuth() {
                       disabled={resendCountdown > 0}
                       className="flex items-center gap-1 disabled:opacity-50 hover:text-vvva-orange transition-colors"
                     >
-                      <RefreshCw size={11} />
+                      <FontAwesomeIcon icon={faRotate} className="text-xs" />
                       {resendCountdown > 0 ? `Resend in ${resendCountdown}s` : 'Resend OTP'}
                     </button>
                   </div>
@@ -279,7 +280,7 @@ export default function AdminAuth() {
 function ErrorBox({ message }) {
   return (
     <div className="flex items-start gap-2.5 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
-      <AlertCircle size={15} className="shrink-0 mt-0.5" />
+      <FontAwesomeIcon icon={faCircleExclamation} className="shrink-0 mt-0.5 text-sm" />
       <span>{message}</span>
     </div>
   );

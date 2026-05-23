@@ -1,6 +1,7 @@
 import { useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faXmark, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 
 const hues = [
   'from-orange-800 to-amber-600',
@@ -58,7 +59,7 @@ export default function GalleryModal({ images, currentIdx, setCurrentIdx, onClos
         className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors z-10"
         aria-label="Close gallery"
       >
-        <X size={24} />
+        <FontAwesomeIcon icon={faXmark} className="text-xl" />
       </button>
 
       {/* Prev arrow */}
@@ -67,7 +68,7 @@ export default function GalleryModal({ images, currentIdx, setCurrentIdx, onClos
         className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full transition-colors z-10"
         aria-label="Previous image"
       >
-        <ChevronLeft size={24} />
+        <FontAwesomeIcon icon={faChevronLeft} className="text-xl" />
       </button>
 
       {/* Next arrow */}
@@ -76,7 +77,7 @@ export default function GalleryModal({ images, currentIdx, setCurrentIdx, onClos
         className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full transition-colors z-10"
         aria-label="Next image"
       >
-        <ChevronRight size={24} />
+        <FontAwesomeIcon icon={faChevronRight} className="text-xl" />
       </button>
 
       {/* Image */}

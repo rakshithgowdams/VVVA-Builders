@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, MapPin, Navigation, ExternalLink } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faXmark, faLocationDot, faCompass, faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
 import PlotSlotGrid from './PlotSlotGrid.jsx';
 import GalleryGrid from './GalleryGrid.jsx';
 import PropertyMap from './PropertyMap.jsx';
@@ -44,7 +45,7 @@ export default function ProjectExpandedPanel({ project, onClose }) {
             <div>
               <h2 className="font-playfair font-bold text-lg text-vvva-black">{project.name}</h2>
               <div className="flex items-center gap-1 text-gray-400 text-xs mt-0.5">
-                <MapPin size={11} />
+                <FontAwesomeIcon icon={faLocationDot} className="text-xs" />
                 {project.location}
               </div>
             </div>
@@ -53,7 +54,7 @@ export default function ProjectExpandedPanel({ project, onClose }) {
               className="text-gray-400 hover:text-vvva-orange transition-colors p-1.5 rounded-btn hover:bg-vvva-orange/5"
               aria-label="Close project details"
             >
-              <X size={18} />
+              <FontAwesomeIcon icon={faXmark} />
             </button>
           </div>
 
@@ -75,7 +76,7 @@ export default function ProjectExpandedPanel({ project, onClose }) {
               <PropertyMap coordinates={project.mapCoordinates} projectName={project.name} />
               <div className="flex flex-wrap items-center gap-4 mt-3">
                 <span className="flex items-center gap-1.5 text-sm text-gray-500">
-                  <Navigation size={13} className="text-vvva-orange" />
+                  <FontAwesomeIcon icon={faCompass} className="text-vvva-orange text-xs" />
                   {project.location}
                 </span>
                 {project.mapCoordinates && (
@@ -90,7 +91,7 @@ export default function ProjectExpandedPanel({ project, onClose }) {
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-[#1a73e8] hover:bg-[#1558b0] px-3 py-1.5 rounded-btn transition-colors"
                   >
-                    <ExternalLink size={12} />
+                    <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="text-xs" />
                     Open in Google Maps
                   </a>
                 )}

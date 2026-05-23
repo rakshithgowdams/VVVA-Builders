@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { X, Phone, MessageCircle } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faXmark, faPhone } from '@fortawesome/free-solid-svg-icons';
+import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 
 const PHONE = '+919353241308';
 const WA_PHONE = '919353241308';
@@ -41,12 +43,12 @@ export default function InquiryPopup() {
           className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100"
           aria-label="Close"
         >
-          <X size={18} />
+          <FontAwesomeIcon icon={faXmark} />
         </button>
 
         <div className="px-6 pt-5 pb-6 text-center">
           <div className="mx-auto w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center mb-3">
-            <Phone size={22} className="text-vvva-orange" />
+            <FontAwesomeIcon icon={faPhone} className="text-vvva-orange text-xl" />
           </div>
           <h3 className="font-playfair font-bold text-xl text-vvva-black mb-1">
             Property Inquiry?
@@ -61,7 +63,7 @@ export default function InquiryPopup() {
               onClick={dismiss}
               className="flex items-center justify-center gap-2 bg-vvva-orange text-white font-semibold py-3 rounded-xl hover:bg-orange-600 active:scale-[0.98] transition-all duration-150 shadow-sm"
             >
-              <Phone size={16} />
+              <FontAwesomeIcon icon={faPhone} />
               Call Us Now
             </a>
             <a
@@ -71,7 +73,7 @@ export default function InquiryPopup() {
               onClick={dismiss}
               className="flex items-center justify-center gap-2 bg-green-600 text-white font-semibold py-3 rounded-xl hover:bg-green-700 active:scale-[0.98] transition-all duration-150 shadow-sm"
             >
-              <MessageCircle size={16} />
+              <FontAwesomeIcon icon={faWhatsapp} />
               WhatsApp Us
             </a>
             <button
