@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faRightFromBracket, faTableColumns, faLocationDot, faChartBar, faUsers, faMessage, faChevronDown, faTrash, faPlus, faXmark, faArrowUpRightFromSquare, faCheck } from '@fortawesome/free-solid-svg-icons';
+import { faRightFromBracket, faTableColumns, faLocationDot, faChartBar, faUsers, faMessage, faChevronDown, faTrash, faPlus, faXmark, faArrowUpRightFromSquare, faCheck, faVideo, faToggleOn, faToggleOff } from '@fortawesome/free-solid-svg-icons';
 import { signOut, getAdminSession } from '../../lib/adminAuth';
-import { fetchAllProjectsWithDetails, fetchEnquiries, updateEnquiryStatus, addProjectImage, deleteProjectImage, updatePlotStatus, updateProjectGoogleMapsUrl } from '../../lib/db';
+import { fetchAllProjectsWithDetails, fetchEnquiries, updateEnquiryStatus, addProjectImage, deleteProjectImage, updatePlotStatus, updateProjectGoogleMapsUrl, fetchPopupVideo, updatePopupVideo } from '../../lib/db';
 
 const STATUS_BADGE = {
   open: 'bg-green-100 text-green-700',
@@ -165,6 +165,137 @@ function GoogleMapsEditor({ project, onSaved }) {
   );
 }
 
+function getYouTubeEmbedUrl(url) {
+  if (!url) return null;
+  try {
+    const u = new URL(url);
+    let videoId = null;
+    if (u.hostname.includes('youtu.be')) videoId = u.pathname.slice(1);
+    else if (u.hostname.includes('youtube.com')) videoId = u.searchParams.get('v');
+    if (!videoId) return null;
+    return `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`;
+  } catch { return null; }
+}
+
+function PopupVideoPanel() {
+  const [config, setConfig] = useState(null);
+  const [url, setUrl] = useState('');
+  const [active, setActive] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [err, setErr] = useState('');
+
+  useEffect(() => {
+    fetchPopupVideo().then(cfg => {
+      if (cfg) {
+        setConfig(cfg);
+        setUrl(cfg.youtube_url || '');
+        setActive(cfg.is_active || false);
+      }
+    }).catch(() => {});
+  }, []);
+
+  const embedUrl = getYouTubeEmbedUrl(url);
+
+  const handleSave = async () => {
+    setSaving(true);
+    setErr('');
+    try {
+      await updatePopupVideo(url.trim(), active);
+      setSaved(true);
+      setConfig({ ...config, youtube_url: url.trim(), is_active: active });
+      setTimeout(() => setSaved(false), 2500);
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div>
+      <h2 className="font-playfair font-bold text-2xl text-stone-800 mb-2">Popup Video</h2>
+      <p className="text-stone-400 text-sm mb-6">Configure the YouTube video that auto-plays inside the inquiry popup shown to site visitors.</p>
+
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Editor */}
+        <div className="bg-white rounded-xl border border-stone-100 shadow-sm p-6 space-y-5">
+          <div>
+            <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">
+              YouTube Video URL
+            </label>
+            <input
+              type="url"
+              value={url}
+              onChange={e => { setUrl(e.target.value); setSaved(false); }}
+              placeholder="https://www.youtube.com/watch?v=..."
+              className="w-full border border-stone-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-vvva-orange/25 focus:border-vvva-orange"
+            />
+            <p className="text-xs text-stone-400 mt-1.5">Paste a YouTube share link or full URL. Short youtu.be links also work.</p>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">
+              Status
+            </label>
+            <button
+              onClick={() => { setActive(a => !a); setSaved(false); }}
+              className={`flex items-center gap-3 px-4 py-2.5 rounded-xl border transition-all text-sm font-semibold ${
+                active
+                  ? 'bg-green-50 border-green-200 text-green-700'
+                  : 'bg-stone-50 border-stone-200 text-stone-500'
+              }`}
+            >
+              <FontAwesomeIcon icon={active ? faToggleOn : faToggleOff} className="text-xl" />
+              {active ? 'Popup video is ON' : 'Popup video is OFF'}
+            </button>
+            <p className="text-xs text-stone-400 mt-1.5">When OFF, the popup shows the standard call-to-action without a video.</p>
+          </div>
+
+          {err && <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{err}</p>}
+
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+              saved
+                ? 'bg-green-500 text-white'
+                : 'bg-vvva-orange hover:bg-orange-600 text-white disabled:opacity-60'
+            }`}
+          >
+            {saved ? <><FontAwesomeIcon icon={faCheck} /> Saved!</> : saving ? 'Saving…' : 'Save Changes'}
+          </button>
+        </div>
+
+        {/* Preview */}
+        <div className="bg-white rounded-xl border border-stone-100 shadow-sm p-6">
+          <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-3">Preview</p>
+          {embedUrl ? (
+            <div className="rounded-xl overflow-hidden border border-stone-100" style={{ aspectRatio: '16/9' }}>
+              <iframe
+                src={embedUrl}
+                title="Preview"
+                className="w-full h-full"
+                style={{ border: 0 }}
+                allowFullScreen
+              />
+            </div>
+          ) : (
+            <div className="rounded-xl bg-stone-50 border border-stone-100 flex flex-col items-center justify-center gap-3 text-stone-300" style={{ aspectRatio: '16/9' }}>
+              <FontAwesomeIcon icon={faVideo} className="text-4xl" />
+              <span className="text-xs text-stone-400">Enter a valid YouTube URL to preview</span>
+            </div>
+          )}
+          <div className="mt-3 flex items-center gap-2 text-xs text-stone-400">
+            <span className={`w-2 h-2 rounded-full ${active && embedUrl ? 'bg-green-500' : 'bg-stone-300'}`} />
+            {active && embedUrl ? 'Video will appear in popup' : 'Video will NOT appear in popup'}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [session, setSession] = useState(null);
@@ -228,6 +359,7 @@ export default function AdminDashboard() {
     { id: 'overview', label: 'Overview', icon: faTableColumns },
     { id: 'projects', label: 'Projects', icon: faLocationDot },
     { id: 'enquiries', label: `Enquiries${newEnquiries > 0 ? ` (${newEnquiries})` : ''}`, icon: faMessage },
+    { id: 'popup', label: 'Popup Video', icon: faVideo },
   ];
 
   return (
@@ -493,6 +625,9 @@ export default function AdminDashboard() {
             </div>
           </div>
         )}
+
+        {/* ── Popup Video ────────────────────────────── */}
+        {activeTab === 'popup' && <PopupVideoPanel />}
       </main>
 
       {addImageForProject && (

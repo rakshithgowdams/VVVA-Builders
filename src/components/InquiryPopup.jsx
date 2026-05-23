@@ -2,14 +2,39 @@ import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark, faPhone } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
+import { fetchPopupVideo } from '../lib/db';
 
 const PHONE = '+919353241308';
 const WA_PHONE = '919353241308';
-const DELAY_MS = 3000;
+const DELAY_MS = 2000;
+
+function getYouTubeEmbedUrl(url) {
+  if (!url) return null;
+  try {
+    const u = new URL(url);
+    let videoId = null;
+    if (u.hostname.includes('youtu.be')) {
+      videoId = u.pathname.slice(1);
+    } else if (u.hostname.includes('youtube.com')) {
+      videoId = u.searchParams.get('v');
+    }
+    if (!videoId) return null;
+    return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&rel=0&modestbranding=1`;
+  } catch {
+    return null;
+  }
+}
 
 export default function InquiryPopup() {
   const [visible, setVisible] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const [videoConfig, setVideoConfig] = useState(null);
+
+  useEffect(() => {
+    fetchPopupVideo()
+      .then(cfg => setVideoConfig(cfg))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -28,28 +53,47 @@ export default function InquiryPopup() {
 
   if (!visible || dismissed) return null;
 
+  const hasVideo = videoConfig?.is_active && videoConfig?.youtube_url;
+  const embedUrl = hasVideo ? getYouTubeEmbedUrl(videoConfig.youtube_url) : null;
+
   return (
     <div
       className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 sm:p-0"
-      style={{ background: 'rgba(0,0,0,0.45)' }}
+      style={{ background: 'rgba(0,0,0,0.55)' }}
       onClick={(e) => e.target === e.currentTarget && dismiss()}
     >
-      <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden animate-slideUp">
-        {/* Top accent bar */}
+      <div className={`relative w-full bg-white rounded-2xl shadow-2xl overflow-hidden animate-slideUp ${embedUrl ? 'max-w-lg' : 'max-w-sm'}`}>
+        {/* Accent bar */}
         <div className="h-1.5 w-full bg-gradient-to-r from-orange-500 to-amber-400" />
 
         <button
           onClick={dismiss}
-          className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100"
+          className="absolute top-3 right-3 z-10 text-gray-400 hover:text-gray-600 transition-colors p-1.5 rounded-full hover:bg-gray-100 bg-white/80 backdrop-blur-sm"
           aria-label="Close"
         >
           <FontAwesomeIcon icon={faXmark} />
         </button>
 
-        <div className="px-6 pt-5 pb-6 text-center">
-          <div className="mx-auto w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center mb-3">
-            <FontAwesomeIcon icon={faPhone} className="text-vvva-orange text-xl" />
+        {/* YouTube embed */}
+        {embedUrl && (
+          <div className="w-full" style={{ aspectRatio: '16/9' }}>
+            <iframe
+              src={embedUrl}
+              title="Property Inquiry Video"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="w-full h-full"
+              style={{ border: 0 }}
+            />
           </div>
+        )}
+
+        <div className="px-6 pt-5 pb-6 text-center">
+          {!embedUrl && (
+            <div className="mx-auto w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center mb-3">
+              <FontAwesomeIcon icon={faPhone} className="text-vvva-orange text-xl" />
+            </div>
+          )}
           <h3 className="font-playfair font-bold text-xl text-vvva-black mb-1">
             Property Inquiry?
           </h3>

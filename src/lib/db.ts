@@ -185,6 +185,33 @@ export async function updateProjectGoogleMapsUrl(projectId: number, google_maps_
   if (error) throw new Error(error.message);
 }
 
+// ── Popup Video ────────────────────────────────────────────────────────────────
+
+export interface PopupVideo {
+  id: number;
+  youtube_url: string;
+  is_active: boolean;
+  updated_at: string;
+}
+
+export async function fetchPopupVideo(): Promise<PopupVideo | null> {
+  const { data, error } = await supabase
+    .from('popup_video')
+    .select('*')
+    .eq('id', 1)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function updatePopupVideo(youtube_url: string, is_active: boolean): Promise<void> {
+  const { error } = await supabase
+    .from('popup_video')
+    .update({ youtube_url, is_active, updated_at: new Date().toISOString() })
+    .eq('id', 1);
+  if (error) throw new Error(error.message);
+}
+
 // ── Site Images ────────────────────────────────────────────────────────────────
 
 export interface SiteImage {
