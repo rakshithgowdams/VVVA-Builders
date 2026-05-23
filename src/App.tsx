@@ -9,6 +9,7 @@ const Home = lazy(() => import('./pages/Home.jsx'));
 const About = lazy(() => import('./pages/About.jsx'));
 const Contact = lazy(() => import('./pages/Contact.jsx'));
 const ProjectDetail = lazy(() => import('./pages/ProjectDetail.jsx'));
+const NotFound = lazy(() => import('./pages/NotFound.jsx'));
 const AdminAuth = lazy(() => import('./pages/admin/AdminAuth.jsx'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard.jsx'));
 
@@ -59,6 +60,7 @@ function PublicLayout() {
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/projects/:id" element={<ProjectDetail />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
       <Footer />
