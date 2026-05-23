@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPhone, faEnvelope, faLocationDot, faClock, faCircleCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faPhone, faLocationDot, faClock, faCircleCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { submitEnquiry } from '../lib/db';
 
@@ -41,8 +41,7 @@ const CONTACT_INFO = [
   { icon: faPhone, label: 'Phone', value: '+91 98456 59193', href: 'tel:+919845659193' },
   { icon: faPhone, label: 'Phone 2', value: '+91 72044 01456', href: 'tel:+917204401456' },
   { icon: faPhone, label: 'Phone 3', value: '+91 93536 40323', href: 'tel:+919353640323' },
-  { icon: faEnvelope, label: 'Email', value: 'info@vvvadeveloper.com', href: 'mailto:info@vvvadeveloper.com' },
-  { icon: faLocationDot, label: 'Address', value: 'Opp Canara Bank, Near MCE College, Salagame Road, Hassan – 573201', href: null },
+  { icon: faLocationDot, label: 'Address', value: 'Opp Canara Bank, Near MCE College, Salagame Road, Hassan – 573201', href: 'https://www.google.com/maps/place/Kova+%26+Insurance/@13.0251695,76.1016727,3a,72.3y,292.91h,80.63t/data=!3m7!1e1!3m5!1s_kmqsv-WsU4GEPGWiTLJcw!2e0!6shttps:%2F%2Fstreetviewpixels-pa.googleapis.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D9.36951403206605%26panoid%3D_kmqsv-WsU4GEPGWiTLJcw%26yaw%3D292.9126790421119!7i16384!8i8192!4m6!3m5!1s0x3ba548334782801b:0x93513139f4f8cf3b!8m2!3d13.0251853!4d76.101585!16s%2Fg%2F11vkz39f67?entry=ttu&g_ep=EgoyMDI2MDUyMC4wIKXMDSoASAFQAw%3D%3D' },
   { icon: faClock, label: 'Office Hours', value: 'Mon–Sat: 9:00 AM – 6:00 PM', href: null },
 ];
 
@@ -199,7 +198,7 @@ export default function Contact() {
                   <div>
                     <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-0.5">{label}</p>
                     {href ? (
-                      <a href={href} className="text-sm text-vvva-black hover:text-vvva-orange transition-colors">{value}</a>
+                      <a href={href} target={href.startsWith('http') ? '_blank' : undefined} rel={href.startsWith('http') ? 'noopener noreferrer' : undefined} className="text-sm text-vvva-black hover:text-vvva-orange transition-colors">{value}</a>
                     ) : (
                       <p className="text-sm text-vvva-black">{value}</p>
                     )}
@@ -209,18 +208,24 @@ export default function Contact() {
             </div>
 
             {/* Google Maps embed */}
-            <div className="rounded-card overflow-hidden border border-vvva-sand" style={{ height: '220px' }}>
+            <a
+              href="https://www.google.com/maps/place/Kova+%26+Insurance/@13.0251695,76.1016727,3a,72.3y,292.91h,80.63t/data=!3m7!1e1!3m5!1s_kmqsv-WsU4GEPGWiTLJcw!2e0!6shttps:%2F%2Fstreetviewpixels-pa.googleapis.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D9.36951403206605%26panoid%3D_kmqsv-WsU4GEPGWiTLJcw%26yaw%3D292.9126790421119!7i16384!8i8192!4m6!3m5!1s0x3ba548334782801b:0x93513139f4f8cf3b!8m2!3d13.0251853!4d76.101585!16s%2Fg%2F11vkz39f67?entry=ttu&g_ep=EgoyMDI2MDUyMC4wIKXMDSoASAFQAw%3D%3D"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block rounded-card overflow-hidden border border-vvva-sand hover:border-vvva-orange transition-colors"
+              style={{ height: '220px' }}
+            >
               <iframe
                 title="VVVA Developer office location on Google Maps"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3887.4567!2d77.5945!3d12.9716!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae1670c9b44e6d%3A0xf8dfc3e8517e4fe0!2sMG%20Road%2C%20Bengaluru!5e0!3m2!1sen!2sin!4v1"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3887.234!2d76.099385!3d13.025185!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba548334782801b%3A0x93513139f4f8cf3b!2sKova%20%26%20Insurance!5e0!3m2!1sen!2sin!4v1"
                 width="100%"
                 height="100%"
-                style={{ border: 0 }}
+                style={{ border: 0, pointerEvents: 'none' }}
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
               />
-            </div>
+            </a>
           </div>
         </div>
       </section>
