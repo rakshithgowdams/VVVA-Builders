@@ -6,10 +6,11 @@ import {
   faEnvelope, faKey, faArrowRight, faRotate,
   faCircleCheck, faCircleExclamation,
 } from '@fortawesome/free-solid-svg-icons';
-import { sendOtp, verifyOtp, setSessionExpiry } from '../../lib/adminAuth';
+import { sendOtp, verifyOtp, establishSession, setSessionExpiry } from '../../lib/adminAuth';
 
 export default function AdminAuth() {
   const navigate = useNavigate();
+  const [mode, setMode] = useState('signin'); // 'signin' | 'signup'
   const [step, setStep] = useState('email'); // 'email' | 'otp'
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -32,7 +33,7 @@ export default function AdminAuth() {
     setError('');
     if (!email.trim()) { setError('Please enter your email address.'); return; }
     setLoading(true);
-    const res = await sendOtp(email.trim());
+    const res = await sendOtp(email.trim(), mode);
     setLoading(false);
     if (res.error) { setError(res.error); return; }
     setStep('otp');
@@ -64,12 +65,18 @@ export default function AdminAuth() {
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
     const code = otp.join('');
-    if (code.length < 6) { setError('Please enter the complete 6-digit code.'); return; }
+    if (code.length < 6) { setError('Please enter the complete 6-digit OTP.'); return; }
     setError('');
     setLoading(true);
-    const res = await verifyOtp(email.trim(), code);
+    const res = await verifyOtp(email.trim(), code, mode);
+    if (res.error) { setLoading(false); setError(res.error); return; }
+
+    if (res.action_link) {
+      const sessionRes = await establishSession(res.action_link);
+      if (sessionRes.error) { setLoading(false); setError(sessionRes.error); return; }
+    }
+
     setLoading(false);
-    if (res.error) { setError(res.error); return; }
     setSessionExpiry();
     navigate('/admin/dashboard');
   };
@@ -79,10 +86,18 @@ export default function AdminAuth() {
     setError('');
     setOtp(['', '', '', '', '', '']);
     setLoading(true);
-    const res = await sendOtp(email.trim());
+    const res = await sendOtp(email.trim(), mode);
     setLoading(false);
     if (res.error) { setError(res.error); return; }
     startCountdown();
+  };
+
+  const switchMode = (newMode) => {
+    setMode(newMode);
+    setStep('email');
+    setEmail('');
+    setOtp(['', '', '', '', '', '']);
+    setError('');
   };
 
   return (
@@ -107,6 +122,23 @@ export default function AdminAuth() {
             <p className="text-white/60 text-sm mt-1">Secure admin portal</p>
           </div>
 
+          {/* Tabs */}
+          <div className="flex border-b border-stone-100">
+            {['signin', 'signup'].map(m => (
+              <button
+                key={m}
+                onClick={() => switchMode(m)}
+                className={`flex-1 py-3.5 text-sm font-semibold transition-colors ${
+                  mode === m
+                    ? 'text-vvva-orange border-b-2 border-vvva-orange bg-orange-50/50'
+                    : 'text-stone-400 hover:text-stone-600'
+                }`}
+              >
+                {m === 'signin' ? 'Sign In' : 'Sign Up'}
+              </button>
+            ))}
+          </div>
+
           <div className="px-8 py-8">
             <AnimatePresence mode="wait">
               {/* Step 1: Email */}
@@ -122,7 +154,9 @@ export default function AdminAuth() {
                 >
                   <div>
                     <p className="text-stone-500 text-sm mb-5 leading-relaxed">
-                      Enter your admin email address. We'll send a one-time code to your inbox instantly.
+                      {mode === 'signin'
+                        ? 'Enter your admin email and we\'ll send you a 6-digit one-time code.'
+                        : 'Enter your email to request account creation. The approval OTP will be sent to the system owner — contact them to get the code.'}
                     </p>
                     <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">
                       Email Address
@@ -147,7 +181,7 @@ export default function AdminAuth() {
                     disabled={loading}
                     className="w-full bg-vvva-orange hover:bg-vvva-orange-dark disabled:opacity-60 text-white font-semibold py-3 rounded-xl transition-all duration-150 flex items-center justify-center gap-2 text-sm"
                   >
-                    {loading ? <Spinner /> : <>Send Code <FontAwesomeIcon icon={faArrowRight} /></>}
+                    {loading ? <Spinner /> : <>Send OTP <FontAwesomeIcon icon={faArrowRight} /></>}
                   </button>
                 </motion.form>
               )}
@@ -167,11 +201,24 @@ export default function AdminAuth() {
                     <div className="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-3">
                       <FontAwesomeIcon icon={faKey} className="text-vvva-orange text-xl" />
                     </div>
-                    <p className="text-stone-700 text-sm font-semibold">Check your inbox</p>
-                    <p className="text-vvva-orange font-semibold text-sm mt-0.5">{email}</p>
-                    <p className="text-stone-400 text-xs mt-2 leading-relaxed">
-                      A 6-digit code was sent to your email. It expires in 10 minutes.
-                    </p>
+                    {mode === 'signup' ? (
+                      <>
+                        <p className="text-stone-700 text-sm font-semibold">OTP sent to system owner</p>
+                        <p className="text-stone-500 text-xs mt-1.5 max-w-xs mx-auto leading-relaxed">
+                          The approval code was sent to the admin owner's email. Contact them and enter the 6-digit code they share with you.
+                        </p>
+                        <div className="mt-3 inline-flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-700 text-xs px-3 py-1.5 rounded-full font-medium">
+                          <FontAwesomeIcon icon={faEnvelope} className="text-xs" />
+                          Awaiting owner approval for <span className="font-bold ml-1">{email}</span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-stone-700 text-sm font-medium">OTP sent to</p>
+                        <p className="text-vvva-orange font-semibold text-sm mt-0.5">{email}</p>
+                        <p className="text-stone-400 text-xs mt-2">Check your inbox and enter the 6-digit code</p>
+                      </>
+                    )}
                   </div>
 
                   {/* OTP boxes */}
@@ -204,7 +251,7 @@ export default function AdminAuth() {
                     disabled={loading || otp.join('').length < 6}
                     className="w-full bg-vvva-orange hover:bg-vvva-orange-dark disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition-all duration-150 flex items-center justify-center gap-2 text-sm"
                   >
-                    {loading ? <Spinner /> : <><FontAwesomeIcon icon={faCircleCheck} /> Sign In</>}
+                    {loading ? <Spinner /> : <><FontAwesomeIcon icon={faCircleCheck} /> Verify &amp; {mode === 'signin' ? 'Sign In' : 'Create Account'}</>}
                   </button>
 
                   <div className="flex items-center justify-between text-xs text-stone-400 pt-1">
@@ -222,7 +269,7 @@ export default function AdminAuth() {
                       className="flex items-center gap-1 disabled:opacity-50 hover:text-vvva-orange transition-colors"
                     >
                       <FontAwesomeIcon icon={faRotate} className="text-xs" />
-                      {resendCountdown > 0 ? `Resend in ${resendCountdown}s` : 'Resend code'}
+                      {resendCountdown > 0 ? `Resend in ${resendCountdown}s` : 'Resend OTP'}
                     </button>
                   </div>
                 </motion.form>

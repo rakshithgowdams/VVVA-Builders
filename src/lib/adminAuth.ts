@@ -1,7 +1,13 @@
 import { supabase } from './supabase';
 
+const EDGE_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-auth`;
 const SESSION_EXPIRY_KEY = 'vvva_admin_session_expiry';
 const SESSION_DURATION_MS = 2 * 60 * 60 * 1000; // 2 hours
+
+const headers = {
+  'Content-Type': 'application/json',
+  Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+};
 
 export function setSessionExpiry() {
   localStorage.setItem(SESSION_EXPIRY_KEY, String(Date.now() + SESSION_DURATION_MS));
@@ -22,23 +28,33 @@ export function isSessionExpired(): boolean {
   return Date.now() >= expiry;
 }
 
-export async function sendOtp(email: string) {
-  const { error } = await supabase.auth.signInWithOtp({
-    email: email.toLowerCase().trim(),
-    options: { shouldCreateUser: true },
+export async function sendOtp(email: string, mode: 'signin' | 'signup') {
+  const res = await fetch(`${EDGE_BASE}/send-otp`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ email, mode }),
   });
-  if (error) return { error: error.message };
-  return { success: true };
+  return res.json();
 }
 
-export async function verifyOtp(email: string, token: string) {
-  const { data, error } = await supabase.auth.verifyOtp({
-    email: email.toLowerCase().trim(),
-    token,
-    type: 'email',
+export async function verifyOtp(email: string, code: string, mode: 'signin' | 'signup') {
+  const res = await fetch(`${EDGE_BASE}/verify-otp`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ email, code, mode }),
   });
-  if (error) return { error: error.message };
-  return { success: true, session: data.session };
+  return res.json();
+}
+
+export async function establishSession(actionLink: string) {
+  const urlObj = new URL(actionLink);
+  const token = urlObj.searchParams.get('token');
+  const type = urlObj.searchParams.get('type');
+  if (token && type) {
+    const { error } = await supabase.auth.verifyOtp({ token_hash: token, type: 'magiclink' });
+    if (error) return { error: error.message };
+  }
+  return { success: true };
 }
 
 export async function signOut() {
