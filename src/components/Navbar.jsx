@@ -1,69 +1,24 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars, faXmark, faPhone, faChevronDown } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faXmark, faPhone } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 
 const NAV_LINKS = [
   { label: 'Home', to: '/' },
-  { label: 'Projects', to: '/projects' },
-  {
-    label: 'Locations',
-    dropdown: [
-      { label: 'Hassan', to: '/locations/hassan' },
-      { label: 'Channarayapatna', to: '/locations/channarayapatna' },
-      { label: 'Holenarasipura', to: '/locations/holenarasipura' },
-      { label: 'Near HIMS', to: '/locations/near-hims' },
-      { label: 'Near Bypass', to: '/locations/near-hassan-bypass' },
-      { label: 'Belur', to: '/locations/belur' },
-      { label: 'Sakleshpur', to: '/locations/sakleshpur' },
-    ],
-  },
-  {
-    label: 'Guides',
-    dropdown: [
-      { label: "Buyer's Guide", to: '/buyers-guide' },
-      { label: 'DTCP Approval', to: '/buyers-guide/dtcp-approval' },
-      { label: 'Stamp Duty 2026', to: '/buyers-guide/stamp-duty-karnataka-2026' },
-      { label: 'NRI Guide', to: '/buyers-guide/nri-buying-guide' },
-      { label: 'Price List', to: '/price-list' },
-    ],
-  },
   { label: 'About', to: '/about' },
+  { label: 'Contact', to: '/contact' },
 ];
 
 const MOBILE_LINKS = [
   { label: 'Home', to: '/' },
-  { label: 'Projects', to: '/projects' },
-  { label: 'Price List', to: '/price-list' },
-  { label: 'Hassan Plots', to: '/locations/hassan' },
-  { label: 'About Us', to: '/about' },
-  { label: 'Contact Us', to: '/contact' },
-  { label: 'FAQ', to: '/faq' },
-  { label: "Buyer's Guide", to: '/buyers-guide' },
+  { label: 'About', to: '/about' },
+  { label: 'Contact', to: '/contact' },
 ];
-
-function DropdownMenu({ items, isOpen }) {
-  if (!isOpen) return null;
-  return (
-    <div className="absolute top-full left-0 mt-1 bg-white border border-vvva-sand rounded-card shadow-xl min-w-[200px] py-1 z-50">
-      {items.map(({ label, to }) => (
-        <Link
-          key={to}
-          to={to}
-          className="block px-4 py-2.5 text-sm text-vvva-black hover:text-vvva-orange hover:bg-amber-50/50 transition-colors"
-        >
-          {label}
-        </Link>
-      ))}
-    </div>
-  );
-}
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -75,7 +30,6 @@ export default function Navbar() {
 
   useEffect(() => {
     setMenuOpen(false);
-    setOpenDropdown(null);
   }, [location]);
 
   const isActive = (to) => {
@@ -116,34 +70,17 @@ export default function Navbar() {
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-6">
             {NAV_LINKS.map((link) => (
-              link.dropdown ? (
-                <div
-                  key={link.label}
-                  className="relative"
-                  onMouseEnter={() => setOpenDropdown(link.label)}
-                  onMouseLeave={() => setOpenDropdown(null)}
-                >
-                  <button className={`flex items-center gap-1 text-sm font-medium transition-colors duration-150 ${
-                    openDropdown === link.label ? 'text-vvva-orange' : 'text-vvva-black hover:text-vvva-orange'
-                  }`}>
-                    {link.label}
-                    <FontAwesomeIcon icon={faChevronDown} className="text-[10px]" />
-                  </button>
-                  <DropdownMenu items={link.dropdown} isOpen={openDropdown === link.label} />
-                </div>
-              ) : (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className={`text-sm font-medium transition-colors duration-150 ${
-                    isActive(link.to)
-                      ? 'text-vvva-orange border-b-2 border-vvva-orange pb-0.5'
-                      : 'text-vvva-black hover:text-vvva-orange'
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              )
+              <Link
+                key={link.to}
+                to={link.to}
+                className={`text-sm font-medium transition-colors duration-150 ${
+                  isActive(link.to)
+                    ? 'text-vvva-orange border-b-2 border-vvva-orange pb-0.5'
+                    : 'text-vvva-black hover:text-vvva-orange'
+                }`}
+              >
+                {link.label}
+              </Link>
             ))}
           </div>
 
