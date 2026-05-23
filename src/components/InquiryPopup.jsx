@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark, faPhone } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
@@ -6,7 +6,7 @@ import { fetchPopupVideo } from '../lib/db';
 
 const PHONE = '+919353241308';
 const WA_PHONE = '919353241308';
-const DELAY_MS = 2000;
+const SHOW_AFTER_MS = 2000;
 
 function getYouTubeEmbedUrl(url) {
   if (!url) return null;
@@ -14,7 +14,7 @@ function getYouTubeEmbedUrl(url) {
     const u = new URL(url);
     let videoId = null;
     if (u.hostname.includes('youtu.be')) {
-      videoId = u.pathname.slice(1);
+      videoId = u.pathname.slice(1).split('?')[0];
     } else if (u.hostname.includes('youtube.com')) {
       videoId = u.searchParams.get('v');
     }
@@ -26,49 +26,58 @@ function getYouTubeEmbedUrl(url) {
 }
 
 export default function InquiryPopup() {
-  const [visible, setVisible] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
+  const [show, setShow] = useState(false);
   const [videoConfig, setVideoConfig] = useState(null);
+  const videoFetched = useRef(false);
 
   useEffect(() => {
-    fetchPopupVideo()
-      .then(cfg => setVideoConfig(cfg))
-      .catch(() => {});
-  }, []);
+    if (sessionStorage.getItem('inquiryPopupDismissed')) return;
 
-  useEffect(() => {
+    // Fetch video config and start timer in parallel
+    let cancelled = false;
+
+    if (!videoFetched.current) {
+      videoFetched.current = true;
+      fetchPopupVideo()
+        .then(cfg => { if (!cancelled) setVideoConfig(cfg); })
+        .catch(() => { if (!cancelled) setVideoConfig(null); });
+    }
+
     const timer = setTimeout(() => {
-      if (!sessionStorage.getItem('inquiryPopupDismissed')) {
-        setVisible(true);
-      }
-    }, DELAY_MS);
-    return () => clearTimeout(timer);
+      if (!cancelled) setShow(true);
+    }, SHOW_AFTER_MS);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, []);
 
   const dismiss = () => {
-    setVisible(false);
-    setDismissed(true);
+    setShow(false);
     sessionStorage.setItem('inquiryPopupDismissed', '1');
   };
 
-  if (!visible || dismissed) return null;
+  if (!show) return null;
 
   const hasVideo = videoConfig?.is_active && videoConfig?.youtube_url;
   const embedUrl = hasVideo ? getYouTubeEmbedUrl(videoConfig.youtube_url) : null;
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 sm:p-0"
+      className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-4 sm:p-6"
       style={{ background: 'rgba(0,0,0,0.55)' }}
-      onClick={(e) => e.target === e.currentTarget && dismiss()}
+      onClick={(e) => { if (e.target === e.currentTarget) dismiss(); }}
     >
-      <div className={`relative w-full bg-white rounded-2xl shadow-2xl overflow-hidden animate-slideUp ${embedUrl ? 'max-w-lg' : 'max-w-sm'}`}>
-        {/* Accent bar */}
+      <div
+        className={`relative w-full bg-white rounded-2xl shadow-2xl overflow-hidden animate-slideUp ${embedUrl ? 'max-w-lg' : 'max-w-sm'}`}
+      >
+        {/* Top accent */}
         <div className="h-1.5 w-full bg-gradient-to-r from-orange-500 to-amber-400" />
 
         <button
           onClick={dismiss}
-          className="absolute top-3 right-3 z-10 text-gray-400 hover:text-gray-600 transition-colors p-1.5 rounded-full hover:bg-gray-100 bg-white/80 backdrop-blur-sm"
+          className="absolute top-3 right-3 z-10 flex items-center justify-center w-7 h-7 text-gray-400 hover:text-gray-700 bg-white rounded-full shadow-sm hover:shadow transition-all"
           aria-label="Close"
         >
           <FontAwesomeIcon icon={faXmark} />
@@ -94,6 +103,7 @@ export default function InquiryPopup() {
               <FontAwesomeIcon icon={faPhone} className="text-vvva-orange text-xl" />
             </div>
           )}
+
           <h3 className="font-playfair font-bold text-xl text-vvva-black mb-1">
             Property Inquiry?
           </h3>
