@@ -128,12 +128,6 @@ export default function Navbar() {
             >
               Enquire Now
             </button>
-            <a href="https://wa.me/919845659193?text=Hi%2C%20I%27m%20interested%20in%20VVVA%20Developer%20plots."
-              target="_blank" rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 bg-green-600 text-white font-semibold px-5 py-2.5 rounded-btn transition-colors">
-              <FontAwesomeIcon icon={faWhatsapp} />
-              WhatsApp Us
-            </a>
           </div>
         </div>
       </div>
