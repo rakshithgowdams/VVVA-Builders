@@ -104,13 +104,13 @@ export default function About() {
       {/* Hero */}
       <section className="py-20 px-4 text-center relative overflow-hidden">
         <img
-          src="/bhoovanahalli-project2.jpeg"
-          alt="VVVA Developer project site"
-          className="absolute inset-0 w-full h-full object-cover"
+          src="/hero-real-estate-bg.webp"
+          alt="VVVA Developer real estate development"
+          className="absolute inset-0 w-full h-full object-cover object-center"
         />
-        <div className="absolute inset-0 bg-stone-900/70" />
-        <div className="absolute inset-0 opacity-20"
-          style={{ backgroundImage: `radial-gradient(circle at 30% 50%, #FF5500 0%, transparent 50%)` }}
+        <div className="absolute inset-0 bg-gradient-to-r from-stone-950/80 via-stone-900/65 to-stone-950/50" />
+        <div className="absolute inset-0 opacity-25"
+          style={{ backgroundImage: `radial-gradient(circle at 30% 50%, #FF5500 0%, transparent 55%)` }}
         />
         <div className="relative z-10 max-w-3xl mx-auto">
           <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }}
