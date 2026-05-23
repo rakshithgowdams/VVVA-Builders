@@ -44,7 +44,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link to="/" className="flex items-center shrink-0">
             <img
-              src="/WhatsApp_Image_2026-05-03_at_22.45.12_1.png"
+              src="/files_2806306-2026-05-23T05-46-35-685Z-WhatsApp_Image_2026-05-03_at_22.45.12.jpeg"
               alt="VVVA Developer"
               className="h-10 w-auto object-contain"
             />
