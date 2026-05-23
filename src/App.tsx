@@ -9,6 +9,7 @@ import ProjectDetail from './pages/ProjectDetail.jsx';
 import AdminAuth from './pages/admin/AdminAuth.jsx';
 import AdminDashboard from './pages/admin/AdminDashboard.jsx';
 import { supabase } from './lib/supabase';
+import InquiryPopup from './components/InquiryPopup.jsx';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -48,6 +49,7 @@ function PublicLayout() {
   return (
     <>
       <ScrollToTop />
+      <InquiryPopup />
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
