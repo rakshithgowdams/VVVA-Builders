@@ -306,12 +306,18 @@ function PopupVideoPanel() {
 }
 
 // ── Overview panel ─────────────────────────────────────────────────────────────
-function OverviewPanel({ projects, enquiries }) {
+function OverviewPanel({ projects, enquiries, onTabChange }) {
   const totalPlots = projects.reduce((s, p) => s + (p.plot_slots?.length || 0), 0);
   const available = projects.reduce((s, p) => s + (p.plot_slots?.filter(x => x.status === 'available').length || 0), 0);
   const booked = projects.reduce((s, p) => s + (p.plot_slots?.filter(x => x.status === 'booked').length || 0), 0);
   const sold = projects.reduce((s, p) => s + (p.plot_slots?.filter(x => x.status === 'sold').length || 0), 0);
+
   const newEnq = enquiries.filter(e => e.status === 'new').length;
+  const contactedEnq = enquiries.filter(e => e.status === 'contacted').length;
+  const closedEnq = enquiries.filter(e => e.status === 'closed').length;
+  const recentEnquiries = [...enquiries]
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .slice(0, 5);
 
   return (
     <div>
@@ -323,7 +329,9 @@ function OverviewPanel({ projects, enquiries }) {
         <StatCard label="Booked / Sold" value={booked + sold} icon={faUsers} color="bg-stone-100 text-stone-600" delay={0.15} />
         <StatCard label="New Enquiries" value={newEnq} icon={faMessage} color="bg-orange-50 text-orange-600" delay={0.2} />
       </div>
-      <div className="bg-white rounded-xl border border-stone-100 shadow-sm overflow-hidden">
+
+      {/* Projects summary table */}
+      <div className="bg-white rounded-xl border border-stone-100 shadow-sm overflow-hidden mb-8">
         <div className="px-6 py-4 border-b border-stone-50">
           <h3 className="font-semibold text-stone-800 text-sm">Projects Summary</h3>
         </div>
@@ -355,6 +363,94 @@ function OverviewPanel({ projects, enquiries }) {
           </table>
         </div>
       </div>
+
+      {/* Contact Queries section */}
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="font-semibold text-stone-800 text-base">Contact Queries</h3>
+            <p className="text-stone-400 text-xs mt-0.5">All enquiries received through the contact &amp; project forms</p>
+          </div>
+          <button
+            onClick={() => onTabChange('enquiries')}
+            className="flex items-center gap-1.5 text-xs text-vvva-orange border border-vvva-orange/30 hover:bg-vvva-orange/5 px-3 py-1.5 rounded-lg transition-colors font-medium"
+          >
+            View all <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="text-[10px]" />
+          </button>
+        </div>
+
+        {/* Status breakdown pills */}
+        <div className="grid grid-cols-3 gap-3 mb-5">
+          {[
+            { label: 'New', count: newEnq, bg: 'bg-orange-50', border: 'border-orange-100', dot: 'bg-orange-400', text: 'text-orange-700', sub: 'text-orange-400' },
+            { label: 'Contacted', count: contactedEnq, bg: 'bg-blue-50', border: 'border-blue-100', dot: 'bg-blue-400', text: 'text-blue-700', sub: 'text-blue-400' },
+            { label: 'Closed', count: closedEnq, bg: 'bg-stone-50', border: 'border-stone-100', dot: 'bg-stone-300', text: 'text-stone-600', sub: 'text-stone-400' },
+          ].map(({ label, count, bg, border, dot, text, sub }) => (
+            <div key={label} className={`${bg} border ${border} rounded-xl px-4 py-3.5 flex items-center gap-3`}>
+              <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${dot}`} />
+              <div>
+                <p className={`text-xl font-bold leading-none ${text}`}>{count}</p>
+                <p className={`text-[11px] mt-0.5 ${sub}`}>{label}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Recent queries list */}
+        <div className="bg-white rounded-xl border border-stone-100 shadow-sm overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-stone-50 flex items-center justify-between">
+            <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Recent Queries</p>
+            <p className="text-xs text-stone-400">{enquiries.length} total</p>
+          </div>
+          {enquiries.length === 0 ? (
+            <div className="px-5 py-10 text-center">
+              <div className="w-10 h-10 bg-stone-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                <FontAwesomeIcon icon={faMessage} className="text-stone-300 text-lg" />
+              </div>
+              <p className="text-stone-400 text-sm">No contact queries yet</p>
+              <p className="text-stone-300 text-xs mt-1">Queries from your site visitors will appear here</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-stone-50">
+              {recentEnquiries.map(enq => (
+                <div key={enq.id} className="px-5 py-3.5 flex items-center gap-4 hover:bg-stone-50/40 transition-colors">
+                  <div className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center shrink-0">
+                    <FontAwesomeIcon icon={faUser} className="text-stone-400 text-xs" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-stone-800 truncate">{enq.name}</p>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase shrink-0 ${ENQUIRY_BADGE[enq.status]}`}>{enq.status}</span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <p className="text-xs text-stone-400 font-mono">{enq.phone}</p>
+                      {enq.projects?.name && (
+                        <>
+                          <span className="text-stone-200">·</span>
+                          <p className="text-xs text-stone-400 truncate">{enq.projects.name}</p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-stone-300 shrink-0 whitespace-nowrap">
+                    {new Date(enq.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                  </p>
+                </div>
+              ))}
+              {enquiries.length > 5 && (
+                <div className="px-5 py-3 text-center">
+                  <button
+                    onClick={() => onTabChange('enquiries')}
+                    className="text-xs text-vvva-orange hover:underline font-medium"
+                  >
+                    +{enquiries.length - 5} more — view all enquiries
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </motion.div>
     </div>
   );
 }
@@ -728,7 +824,7 @@ export default function AdminDashboard() {
               transition={{ duration: 0.2 }}
             >
               {activeTab === 'overview' && (
-                <OverviewPanel projects={projects} enquiries={enquiries} />
+                <OverviewPanel projects={projects} enquiries={enquiries} onTabChange={navigate_to} />
               )}
               {activeTab === 'property' && (
                 <ProjectsManager projects={projects} onRefresh={refresh} />
