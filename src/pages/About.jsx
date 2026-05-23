@@ -145,16 +145,12 @@ export default function About() {
               </div>
             </div>
             <div className="relative">
-              <div className="w-full h-72 bg-gradient-to-br from-orange-700 via-orange-500 to-amber-400 rounded-card flex items-center justify-center shadow-lg">
-                <div className="text-center text-white">
-                  <svg width="64" height="64" viewBox="0 0 64 64" fill="none" className="mx-auto mb-4 opacity-80" aria-hidden="true">
-                    <rect x="8" y="8" width="48" height="48" rx="8" stroke="white" strokeWidth="2.5"/>
-                    <path d="M8 32h48M32 8v48" stroke="white" strokeWidth="1.5" strokeDasharray="4 3"/>
-                    <circle cx="32" cy="32" r="8" fill="white"/>
-                  </svg>
-                  <p className="font-playfair font-bold text-xl">VVVA Developer</p>
-                  <p className="text-white/70 text-sm mt-1">Est. 2015, Hassan</p>
-                </div>
+              <div className="w-full h-72 bg-white rounded-card flex items-center justify-center shadow-lg border border-stone-100 overflow-hidden">
+                <img
+                  src="/WhatsApp_Image_2026-05-03_at_22.45.12_2.png"
+                  alt="VVVA Developer"
+                  className="w-4/5 object-contain"
+                />
               </div>
               <div className="absolute -bottom-4 -right-4 bg-vvva-orange text-white rounded-card px-5 py-3 shadow-lg">
                 <p className="font-playfair font-bold text-2xl">10+</p>
