@@ -554,9 +554,7 @@ export default function AdminDashboard() {
         {/* Logo */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-stone-800">
           <div className="flex items-center gap-2.5">
-            <div className="bg-stone-800 rounded-lg px-2 py-1.5">
-              <img src="/vvva-logo.png" alt="VVVA" className="h-7 w-auto object-contain" />
-            </div>
+            <img src="/vvva-logo.png" alt="VVVA" className="h-8 w-auto object-contain" />
             <div>
               <p className="text-white text-xs font-semibold leading-tight">VVVA</p>
               <p className="text-stone-500 text-[10px]">Admin Panel</p>

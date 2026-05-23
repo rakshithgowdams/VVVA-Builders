@@ -20,8 +20,14 @@ function AvatarUploader({ userId, currentUrl, onChanged }) {
   const [removing, setRemoving] = useState(false);
   const [err, setErr] = useState('');
   const [hover, setHover] = useState(false);
+  const uploadingRef = useRef(false);
 
-  useEffect(() => { setPreview(currentUrl || ''); }, [currentUrl]);
+  // Only sync preview from prop when we're not mid-upload
+  useEffect(() => {
+    if (!uploadingRef.current) {
+      setPreview(currentUrl || '');
+    }
+  }, [currentUrl]);
 
   const handleFile = async (file) => {
     setErr('');
@@ -35,15 +41,18 @@ function AvatarUploader({ userId, currentUrl, onChanged }) {
     }
     const objectUrl = URL.createObjectURL(file);
     setPreview(objectUrl);
+    uploadingRef.current = true;
     setUploading(true);
     try {
       const publicUrl = await uploadAdminAvatar(userId, file);
+      setPreview(publicUrl);
       onChanged(publicUrl);
     } catch (e) {
       setErr(e.message);
       setPreview(currentUrl || '');
     } finally {
       setUploading(false);
+      uploadingRef.current = false;
     }
   };
 
@@ -55,6 +64,7 @@ function AvatarUploader({ userId, currentUrl, onChanged }) {
 
   const handleRemove = async () => {
     if (!confirm('Remove your profile photo?')) return;
+    uploadingRef.current = true;
     setRemoving(true);
     try {
       await deleteAdminAvatar(userId);
@@ -64,6 +74,7 @@ function AvatarUploader({ userId, currentUrl, onChanged }) {
       setErr(e.message);
     } finally {
       setRemoving(false);
+      uploadingRef.current = false;
     }
   };
 
