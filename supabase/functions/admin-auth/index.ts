@@ -18,6 +18,86 @@ function generateOtp(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
+// ── Shared email logo header ──────────────────────────────────────────────────
+const LOGO_HEADER = `
+  <div style="text-align:center; padding: 28px 32px 20px; background:#1c1c1c; border-radius:12px 12px 0 0;">
+    <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
+      <tr>
+        <td style="vertical-align:middle; padding-right:10px;">
+          <!-- V chevron mark -->
+          <div style="width:36px; height:36px; background:#FF5500; border-radius:8px; display:flex; align-items:center; justify-content:center;">
+            <span style="color:white; font-size:22px; font-weight:900; font-family:Georgia,serif; line-height:1;">V</span>
+          </div>
+        </td>
+        <td style="vertical-align:middle;">
+          <span style="color:#ffffff; font-size:18px; font-weight:700; font-family:Georgia,'Times New Roman',serif; letter-spacing:1px;">VVVA Developer</span>
+        </td>
+      </tr>
+    </table>
+    <p style="margin:10px 0 0; color:#aaa; font-size:11px; font-family:Arial,sans-serif; letter-spacing:0.5px;">ADMIN PORTAL</p>
+  </div>
+`;
+
+// ── OTP block (compact) ───────────────────────────────────────────────────────
+function otpBlock(code: string): string {
+  // Render each digit as its own cell for perfect spacing in all email clients
+  const digits = code.split("").map(d =>
+    `<td style="padding:0 4px;">
+      <span style="
+        display:inline-block;
+        width:32px; height:40px; line-height:40px;
+        background:#fff; border:1.5px solid #FF5500;
+        border-radius:8px; text-align:center;
+        font-size:22px; font-weight:700;
+        color:#FF5500; font-family:Monaco,Courier,monospace;
+      ">${d}</span>
+    </td>`
+  ).join("");
+
+  return `
+    <div style="background:#fff8f5; border-radius:10px; padding:20px 16px; text-align:center; margin-bottom:20px; border:1px solid #ffe0cc;">
+      <p style="margin:0 0 12px; font-size:11px; color:#aaa; text-transform:uppercase; letter-spacing:1.5px; font-family:Arial,sans-serif;">One-Time Password</p>
+      <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
+        <tr>${digits}</tr>
+      </table>
+      <p style="margin:12px 0 0; font-size:11px; color:#bbb; font-family:Arial,sans-serif;">Expires in <strong style="color:#888;">10 minutes</strong> &middot; Single use only</p>
+    </div>
+  `;
+}
+
+// ── Email wrapper ─────────────────────────────────────────────────────────────
+function emailWrapper(bodyHtml: string): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+    <body style="margin:0; padding:0; background:#f0ede8;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f0ede8; padding:32px 16px;">
+        <tr>
+          <td align="center">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:500px; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+              <tr><td>${LOGO_HEADER}</td></tr>
+              <tr>
+                <td style="padding:28px 32px 32px; font-family:Arial,sans-serif;">
+                  ${bodyHtml}
+                </td>
+              </tr>
+              <tr>
+                <td style="background:#f9f6f2; padding:16px 32px; text-align:center; border-top:1px solid #eee;">
+                  <p style="margin:0; font-size:11px; color:#bbb; font-family:Arial,sans-serif;">
+                    &copy; ${new Date().getFullYear()} VVVA Developer &mdash; Authorized admin access only
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
+}
+
 async function sendEmail(resendKey: string, to: string, subject: string, html: string) {
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -67,7 +147,6 @@ Deno.serve(async (req: Request) => {
       const normalizedEmail = email.toLowerCase().trim();
 
       if (mode === "signup") {
-        // Check email not already registered
         const { data: existing } = await supabaseAdmin
           .from("admin_users")
           .select("id")
@@ -82,7 +161,6 @@ Deno.serve(async (req: Request) => {
           return json({ error: "Admin notification email not configured" }, 500);
         }
 
-        // Invalidate any existing unused OTPs for this email
         await supabaseAdmin
           .from("otp_codes")
           .update({ used: true })
@@ -99,29 +177,22 @@ Deno.serve(async (req: Request) => {
           used: false,
         });
 
-        // Send OTP to ADMIN_NOTIFICATION_EMAIL — owner must approve the signup
+        const bodyHtml = `
+          <div style="background:#fff8f0; border-left:3px solid #FF5500; padding:12px 16px; border-radius:4px; margin-bottom:20px;">
+            <p style="margin:0; font-size:13px; color:#b84a00; font-weight:600;">Action Required: Admin Account Signup Request</p>
+          </div>
+          <p style="color:#444; font-size:14px; margin:0 0 6px;">Someone is requesting to create an admin account:</p>
+          <p style="font-size:14px; font-weight:700; color:#FF5500; margin:0 0 18px; background:#fff8f5; display:inline-block; padding:6px 12px; border-radius:6px; border:1px solid #ffe0cc;">${normalizedEmail}</p>
+          <p style="color:#555; font-size:13px; margin:0 0 20px; line-height:1.6;">If you <strong>authorised</strong> this request, share the OTP below with them. If not, <strong>ignore this email</strong> — it expires in 10 minutes.</p>
+          ${otpBlock(code)}
+          <p style="color:#bbb; font-size:12px; margin:0; text-align:center;">Do not share this code with anyone you do not trust.</p>
+        `;
+
         const resendRes = await sendEmail(
           resendKey,
           notifyEmail,
           `Admin Signup Approval Required — OTP for ${normalizedEmail}`,
-          `
-            <div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 32px; background: #fff; border-radius: 12px; border: 1px solid #eee;">
-              <div style="text-align:center; margin-bottom: 28px;">
-                <span style="background:#FF5500; color:white; font-size:18px; font-weight:bold; padding: 8px 20px; border-radius:8px;">VVVA Developer</span>
-              </div>
-              <div style="background:#fff3e0; border-left:4px solid #FF5500; padding:12px 16px; border-radius:4px; margin-bottom:20px;">
-                <p style="margin:0; font-size:14px; color:#b84a00; font-weight:600;">Action Required: Admin Account Signup</p>
-              </div>
-              <p style="color:#555; margin-bottom:8px;">Someone is requesting to create an admin account with the following email:</p>
-              <p style="font-size:16px; font-weight:700; color:#FF5500; margin-bottom:20px;">${normalizedEmail}</p>
-              <p style="color:#555; margin-bottom:20px;">If you <strong>authorised</strong> this request, share the OTP below with them. If not, <strong>ignore this email</strong> — the request will expire in 10 minutes.</p>
-              <div style="background:#f5f5f5; border-radius:12px; padding:24px; text-align:center; margin-bottom:24px;">
-                <p style="margin:0 0 8px; font-size:12px; color:#888; text-transform:uppercase; letter-spacing:1px;">One-Time Password</p>
-                <span style="font-size:40px; font-weight:bold; letter-spacing:12px; color:#FF5500;">${code}</span>
-              </div>
-              <p style="color:#999; font-size:12px; text-align:center;">This OTP expires in <strong>10 minutes</strong> and can only be used once.</p>
-            </div>
-          `
+          emailWrapper(bodyHtml)
         );
 
         if (!resendRes.ok) {
@@ -134,7 +205,6 @@ Deno.serve(async (req: Request) => {
       }
 
       if (mode === "signin") {
-        // Check email exists
         const { data: existing } = await supabaseAdmin
           .from("admin_users")
           .select("id")
@@ -145,7 +215,6 @@ Deno.serve(async (req: Request) => {
           return json({ error: "No admin account found for this email. Please sign up first." }, 404);
         }
 
-        // Invalidate any existing unused OTPs
         await supabaseAdmin
           .from("otp_codes")
           .update({ used: true })
@@ -162,24 +231,18 @@ Deno.serve(async (req: Request) => {
           used: false,
         });
 
-        // Send OTP directly to the user's email for signin
+        const bodyHtml = `
+          <h2 style="color:#1a1a1a; font-size:18px; margin:0 0 8px; font-family:Georgia,serif;">Your sign-in code</h2>
+          <p style="color:#555; font-size:13px; margin:0 0 22px; line-height:1.6;">Use the code below to sign in to your VVVA Developer admin account. It is valid for <strong>10 minutes</strong> and can only be used once.</p>
+          ${otpBlock(code)}
+          <p style="color:#bbb; font-size:12px; margin:0; text-align:center;">If you did not request this, you can safely ignore this email.</p>
+        `;
+
         const resendRes = await sendEmail(
           resendKey,
           normalizedEmail,
-          `Your VVVA Admin Sign-In OTP: ${code}`,
-          `
-            <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #fff; border-radius: 12px; border: 1px solid #eee;">
-              <div style="text-align:center; margin-bottom: 24px;">
-                <span style="background:#FF5500; color:white; font-size:20px; font-weight:bold; padding: 8px 20px; border-radius:8px;">VVVA Developer</span>
-              </div>
-              <h2 style="color:#1a1a1a; margin-bottom:8px;">Your sign-in OTP</h2>
-              <p style="color:#555; margin-bottom:24px;">Use this code to sign in to your admin account. It expires in <strong>10 minutes</strong>.</p>
-              <div style="background:#f5f5f5; border-radius:12px; padding:24px; text-align:center; margin-bottom:24px;">
-                <span style="font-size:40px; font-weight:bold; letter-spacing:12px; color:#FF5500;">${code}</span>
-              </div>
-              <p style="color:#999; font-size:13px;">If you didn't request this, please ignore this email.</p>
-            </div>
-          `
+          `Your VVVA Admin Sign-In Code`,
+          emailWrapper(bodyHtml)
         );
 
         if (!resendRes.ok) {
@@ -204,7 +267,6 @@ Deno.serve(async (req: Request) => {
 
       const normalizedEmail = email.toLowerCase().trim();
 
-      // Find a valid unused OTP
       const { data: otpRecord } = await supabaseAdmin
         .from("otp_codes")
         .select("*")
@@ -220,14 +282,12 @@ Deno.serve(async (req: Request) => {
         return json({ error: "Invalid or expired OTP. Please request a new one." }, 400);
       }
 
-      // Mark OTP as used
       await supabaseAdmin
         .from("otp_codes")
         .update({ used: true })
         .eq("id", otpRecord.id);
 
       if (mode === "signup") {
-        // Create auth user + admin_users record
         const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
           email: normalizedEmail,
           email_confirm: true,
@@ -242,39 +302,32 @@ Deno.serve(async (req: Request) => {
           email: normalizedEmail,
         });
 
-        // Send confirmation notification to admin owner
         if (resendKey && notifyEmail) {
           const createdAt = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+          const confirmBody = `
+            <div style="background:#f0faf0; border-left:3px solid #4caf50; padding:12px 16px; border-radius:4px; margin-bottom:20px;">
+              <p style="margin:0; font-size:13px; color:#2e7d32; font-weight:600;">New admin account created successfully</p>
+            </div>
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f9f9f9; border-radius:8px; overflow:hidden; margin-bottom:20px;">
+              <tr>
+                <td style="padding:12px 16px; color:#888; font-size:12px; width:40%; border-bottom:1px solid #eee;">Email</td>
+                <td style="padding:12px 16px; color:#1a1a1a; font-weight:600; font-size:13px; border-bottom:1px solid #eee;">${normalizedEmail}</td>
+              </tr>
+              <tr>
+                <td style="padding:12px 16px; color:#888; font-size:12px;">Created At</td>
+                <td style="padding:12px 16px; color:#1a1a1a; font-size:13px;">${createdAt} IST</td>
+              </tr>
+            </table>
+            <p style="color:#bbb; font-size:12px; margin:0; text-align:center;">If you did not authorise this, review your admin access immediately.</p>
+          `;
           await sendEmail(
             resendKey,
             notifyEmail,
             "New Admin Account Created — VVVA Developer",
-            `
-              <div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 32px; background: #fff; border-radius: 12px; border: 1px solid #eee;">
-                <div style="text-align:center; margin-bottom: 28px;">
-                  <span style="background:#FF5500; color:white; font-size:18px; font-weight:bold; padding: 8px 20px; border-radius:8px;">VVVA Developer</span>
-                </div>
-                <div style="background:#e8f5e9; border-left:4px solid #4caf50; padding:12px 16px; border-radius:4px; margin-bottom:20px;">
-                  <p style="margin:0; font-size:14px; color:#2e7d32; font-weight:600;">Admin Account Successfully Created</p>
-                </div>
-                <p style="color:#555; margin-bottom:20px;">A new admin account has been created on the VVVA Developer platform.</p>
-                <table style="width:100%; border-collapse:collapse; background:#f9f9f9; border-radius:8px; overflow:hidden;">
-                  <tr>
-                    <td style="padding:12px 16px; color:#888; font-size:13px; width:40%;">Email</td>
-                    <td style="padding:12px 16px; color:#1a1a1a; font-weight:600; font-size:14px;">${normalizedEmail}</td>
-                  </tr>
-                  <tr style="border-top:1px solid #eee;">
-                    <td style="padding:12px 16px; color:#888; font-size:13px;">Created At</td>
-                    <td style="padding:12px 16px; color:#1a1a1a; font-size:14px;">${createdAt} IST</td>
-                  </tr>
-                </table>
-                <p style="color:#999; font-size:12px; margin-top:24px;">If you did not authorise this, review your admin access immediately.</p>
-              </div>
-            `
+            emailWrapper(confirmBody)
           ).catch((err) => console.error("Confirmation email failed:", err));
         }
 
-        // Create a session via magic link
         const { data: sessionData, error: sessionError } = await supabaseAdmin.auth.admin.generateLink({
           type: "magiclink",
           email: normalizedEmail,
