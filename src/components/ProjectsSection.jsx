@@ -161,8 +161,14 @@ export default function ProjectsSection() {
         )}
 
         {error && (
-          <div className="text-center py-16 text-red-500 text-sm">
-            Failed to load projects: {error}
+          <div className="text-center py-16">
+            <p className="text-red-500 text-sm mb-4">Failed to load projects. Please try again.</p>
+            <button
+              onClick={() => { setError(null); setLoading(true); loadProjects(); }}
+              className="border-2 border-vvva-orange text-vvva-orange hover:bg-vvva-orange hover:text-white font-semibold px-6 py-2 rounded-btn transition-all duration-200 text-sm"
+            >
+              Retry
+            </button>
           </div>
         )}
 

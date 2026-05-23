@@ -63,15 +63,20 @@ export interface Enquiry {
 
 // ── Projects ──────────────────────────────────────────────────────────────────
 
+const PROJECT_SELECT = `
+  *,
+  images:project_images ( id, project_id, url, caption, display_order, created_at ),
+  plot_slots ( id, project_id, bite_no, dimensions, sqft, direction, status, price_lakhs, details, created_at, updated_at )
+`;
+
 export async function fetchAllProjectsWithDetails(): Promise<Project[]> {
-  const { data, error } = await supabase
-    .from('projects')
-    .select(`
-      *,
-      images:project_images ( id, project_id, url, caption, display_order, created_at ),
-      plot_slots ( id, project_id, bite_no, dimensions, sqft, direction, status, price_lakhs, details, created_at, updated_at )
-    `)
-    .order('id');
+  let { data, error } = await supabase.from('projects').select(PROJECT_SELECT).order('id');
+
+  // Retry once on transient schema cache errors
+  if (error && error.message.toLowerCase().includes('schema cache')) {
+    await new Promise((r) => setTimeout(r, 1500));
+    ({ data, error } = await supabase.from('projects').select(PROJECT_SELECT).order('id'));
+  }
 
   if (error) {
     console.error('[db] fetchAllProjectsWithDetails error:', error);
