@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars, faXmark, faPhone } from '@fortawesome/free-solid-svg-icons';
-import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 
 const NAV_LINKS = [
   { label: 'Home', to: '/' },
@@ -40,24 +39,6 @@ export default function Navbar() {
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 bg-white transition-all duration-200 ${scrolled ? 'shadow-md border-b border-vvva-sand' : 'border-b border-vvva-sand/50'}`}>
-      {/* Top utility bar */}
-      <div className="hidden md:block bg-stone-800 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1.5 flex items-center justify-between">
-          <p className="text-xs text-white/50">Trusted residential plot developer in Hassan since 2015</p>
-          <div className="flex items-center gap-4">
-            <a href="tel:+919845659193" className="flex items-center gap-1.5 text-xs text-white/70 hover:text-vvva-orange transition-colors">
-              <FontAwesomeIcon icon={faPhone} className="text-[10px]" />
-              +91 98456 59193
-            </a>
-            <a href="https://wa.me/919845659193?text=Hi%2C%20I%27m%20interested%20in%20VVVA%20Developer%20plots."
-              target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-xs text-white/70 hover:text-green-400 transition-colors">
-              <FontAwesomeIcon icon={faWhatsapp} />
-              WhatsApp
-            </a>
-          </div>
-        </div>
-      </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
