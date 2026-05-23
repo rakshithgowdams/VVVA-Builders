@@ -212,6 +212,56 @@ export async function updatePopupVideo(youtube_url: string, is_active: boolean):
   if (error) throw new Error(error.message);
 }
 
+// ── Admin Profiles ─────────────────────────────────────────────────────────────
+
+export interface AdminProfile {
+  id: string;
+  display_name: string;
+  avatar_url: string;
+  bio: string;
+  phone: string;
+  updated_at: string;
+}
+
+export async function fetchAdminProfile(userId: string): Promise<AdminProfile | null> {
+  const { data, error } = await supabase
+    .from('admin_profiles')
+    .select('*')
+    .eq('id', userId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function upsertAdminProfile(profile: Omit<AdminProfile, 'updated_at'>): Promise<void> {
+  const { error } = await supabase
+    .from('admin_profiles')
+    .upsert({ ...profile, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+  if (error) throw new Error(error.message);
+}
+
+export async function uploadAdminAvatar(userId: string, file: File): Promise<string> {
+  const ext = file.name.split('.').pop();
+  const path = `${userId}/avatar.${ext}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('admin-avatars')
+    .upload(path, file, { upsert: true, contentType: file.type });
+
+  if (uploadError) throw new Error(uploadError.message);
+
+  const { data } = supabase.storage.from('admin-avatars').getPublicUrl(path);
+  // Bust cache with timestamp
+  return `${data.publicUrl}?t=${Date.now()}`;
+}
+
+export async function deleteAdminAvatar(userId: string): Promise<void> {
+  const extensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+  for (const ext of extensions) {
+    await supabase.storage.from('admin-avatars').remove([`${userId}/avatar.${ext}`]);
+  }
+}
+
 // ── Site Images ────────────────────────────────────────────────────────────────
 
 export interface SiteImage {

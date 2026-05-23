@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faRightFromBracket, faTableColumns, faLocationDot, faChartBar, faUsers, faMessage, faChevronDown, faTrash, faPlus, faXmark, faArrowUpRightFromSquare, faCheck, faVideo, faToggleOn, faToggleOff } from '@fortawesome/free-solid-svg-icons';
+import { faRightFromBracket, faTableColumns, faLocationDot, faChartBar, faUsers, faMessage, faChevronDown, faTrash, faPlus, faXmark, faArrowUpRightFromSquare, faCheck, faVideo, faToggleOn, faToggleOff, faUserCircle, faUser } from '@fortawesome/free-solid-svg-icons';
 import { signOut, getAdminSession } from '../../lib/adminAuth';
 import { fetchAllProjectsWithDetails, fetchEnquiries, updateEnquiryStatus, addProjectImage, deleteProjectImage, updatePlotStatus, updateProjectGoogleMapsUrl, fetchPopupVideo, updatePopupVideo } from '../../lib/db';
+import AdminProfile from '../../components/AdminProfile.jsx';
 
 const STATUS_BADGE = {
   open: 'bg-green-100 text-green-700',
@@ -360,6 +361,7 @@ export default function AdminDashboard() {
     { id: 'projects', label: 'Projects', icon: faLocationDot },
     { id: 'enquiries', label: `Enquiries${newEnquiries > 0 ? ` (${newEnquiries})` : ''}`, icon: faMessage },
     { id: 'popup', label: 'Popup Video', icon: faVideo },
+    { id: 'profile', label: 'Profile', icon: faUserCircle },
   ];
 
   return (
@@ -375,7 +377,16 @@ export default function AdminDashboard() {
                 className="h-7 w-auto object-contain"
               />
             </div>
-            <p className="text-stone-400 text-xs hidden sm:block">{session.user.email}</p>
+            <button
+              onClick={() => setActiveTab('profile')}
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+              title="My Profile"
+            >
+              <div className="w-8 h-8 rounded-full overflow-hidden bg-stone-200 border-2 border-stone-100 shadow-sm flex items-center justify-center">
+                <FontAwesomeIcon icon={faUser} className="text-stone-400 text-sm" />
+              </div>
+              <p className="text-stone-500 text-xs hidden sm:block">{session.user.email}</p>
+            </button>
           </div>
           <button
             onClick={handleSignOut}
@@ -630,6 +641,9 @@ export default function AdminDashboard() {
 
         {/* ── Popup Video ────────────────────────────── */}
         {activeTab === 'popup' && <PopupVideoPanel />}
+
+        {/* ── Profile ────────────────────────────────── */}
+        {activeTab === 'profile' && <AdminProfile session={session} />}
       </main>
 
       {addImageForProject && (
