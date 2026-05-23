@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark, faCompass, faIndianRupeeSign, faRulerCombined, faFileLines, faPhone } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 
-const ADMIN_PHONE = '919353241308';
+const ADMIN_PHONE = '919845659193';
 
 export default function SlotInfoPanel({ slot, projectName, onClose }) {
   const buildWhatsAppMessage = () => {

@@ -4,8 +4,8 @@ import { faXmark, faPhone } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { fetchPopupVideo } from '../lib/db';
 
-const PHONE = '+919353241308';
-const WA_PHONE = '919353241308';
+const PHONE = '+919845659193';
+const WA_PHONE = '919845659193';
 const SHOW_AFTER_MS = 2000;
 
 function getYouTubeEmbedUrl(url) {

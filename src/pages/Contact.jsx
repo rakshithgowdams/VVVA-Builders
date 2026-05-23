@@ -38,7 +38,7 @@ function Toast({ message, onClose }) {
 }
 
 const CONTACT_INFO = [
-  { icon: faPhone, label: 'Phone', value: '+91 99999 99999', href: 'tel:+919999999999' },
+  { icon: faPhone, label: 'Phone', value: '+91 98456 59193', href: 'tel:+919845659193' },
   { icon: faEnvelope, label: 'Email', value: 'info@vvvadeveloper.com', href: 'mailto:info@vvvadeveloper.com' },
   { icon: faLocationDot, label: 'Address', value: '123, MG Road, Bengaluru, Karnataka 560001', href: null },
   { icon: faClock, label: 'Office Hours', value: 'Mon–Sat: 9:00 AM – 6:00 PM', href: null },

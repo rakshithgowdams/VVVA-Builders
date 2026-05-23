@@ -63,7 +63,7 @@ export default function Footer() {
                 <FontAwesomeIcon icon={faInstagram} className="text-xl" />
               </a>
               <a
-                href="https://wa.me/919999999999"
+                href="https://wa.me/919845659193"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-vvva-orange hover:text-vvva-orange-light transition-colors"
@@ -82,7 +82,7 @@ export default function Footer() {
               </a>
             </div>
             <div className="text-sm text-white/60 space-y-1.5">
-              <p>+91 99999 99999</p>
+              <p>+91 98456 59193</p>
               <p>info@vvvadeveloper.com</p>
               <p>Bengaluru, Karnataka, India</p>
             </div>
