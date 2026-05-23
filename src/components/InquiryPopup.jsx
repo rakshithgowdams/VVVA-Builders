@@ -69,8 +69,12 @@ export default function InquiryPopup() {
 
   if (!show) return null;
 
-  const hasVideo = videoConfig?.is_active && videoConfig?.youtube_url;
-  const embedUrl = hasVideo ? getYouTubeEmbedUrl(videoConfig.youtube_url) : null;
+  const isActive = videoConfig?.is_active;
+  const videoType = videoConfig?.video_type || 'youtube';
+  const hasYoutube = isActive && videoType === 'youtube' && videoConfig?.youtube_url;
+  const hasUpload = isActive && videoType === 'upload' && videoConfig?.uploaded_video_url;
+  const embedUrl = hasYoutube ? getYouTubeEmbedUrl(videoConfig.youtube_url) : null;
+  const hasVideo = !!embedUrl || hasUpload;
 
   return (
     <div
@@ -79,7 +83,7 @@ export default function InquiryPopup() {
       onClick={(e) => { if (e.target === e.currentTarget) dismiss(); }}
     >
       <div
-        className={`relative w-full bg-white rounded-2xl shadow-2xl overflow-hidden animate-slideUp ${embedUrl ? 'max-w-lg' : 'max-w-sm'}`}
+        className={`relative w-full bg-white rounded-2xl shadow-2xl overflow-hidden animate-slideUp ${hasVideo ? 'max-w-lg' : 'max-w-sm'}`}
       >
         {/* Top accent */}
         <div className="h-1.5 w-full bg-gradient-to-r from-orange-500 to-amber-400" />
@@ -102,6 +106,21 @@ export default function InquiryPopup() {
               allowFullScreen
               className="w-full h-full"
               style={{ border: 0 }}
+            />
+          </div>
+        )}
+
+        {/* Uploaded video */}
+        {hasUpload && !embedUrl && (
+          <div className="w-full" style={{ aspectRatio: '16/9' }}>
+            <video
+              src={videoConfig.uploaded_video_url}
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="w-full h-full object-cover"
+              style={{ background: '#000' }}
             />
           </div>
         )}

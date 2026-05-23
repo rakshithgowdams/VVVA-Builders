@@ -260,6 +260,8 @@ export interface PopupVideo {
   id: number;
   youtube_url: string;
   is_active: boolean;
+  video_type: 'youtube' | 'upload';
+  uploaded_video_url: string;
   updated_at: string;
 }
 
@@ -273,12 +275,35 @@ export async function fetchPopupVideo(): Promise<PopupVideo | null> {
   return data;
 }
 
-export async function updatePopupVideo(youtube_url: string, is_active: boolean): Promise<void> {
+export async function updatePopupVideo(
+  fields: { youtube_url?: string; is_active?: boolean; video_type?: 'youtube' | 'upload'; uploaded_video_url?: string }
+): Promise<void> {
   const { error } = await supabase
     .from('popup_video')
-    .update({ youtube_url, is_active, updated_at: new Date().toISOString() })
+    .update({ ...fields, updated_at: new Date().toISOString() })
     .eq('id', 1);
   if (error) throw new Error(error.message);
+}
+
+export async function uploadPopupVideo(file: File): Promise<string> {
+  const ext = file.name.split('.').pop()?.toLowerCase() || 'mp4';
+  const path = `popup-${Date.now()}.${ext}`;
+
+  const { error } = await supabase.storage
+    .from('popup-videos')
+    .upload(path, file, { upsert: true, contentType: file.type });
+
+  if (error) throw new Error(error.message);
+
+  const { data } = supabase.storage.from('popup-videos').getPublicUrl(path);
+  return data.publicUrl;
+}
+
+export async function deletePopupVideoFile(url: string): Promise<void> {
+  const parts = url.split('/popup-videos/');
+  if (parts.length < 2) return;
+  const path = parts[1].split('?')[0];
+  await supabase.storage.from('popup-videos').remove([path]);
 }
 
 // ── Admin Profiles ─────────────────────────────────────────────────────────────

@@ -14,7 +14,7 @@ import {
   fetchAllProjectsWithDetails, fetchEnquiries, updateEnquiryStatus,
   addProjectImage, deleteProjectImage, updatePlotStatus,
   updateProjectGoogleMapsUrl, fetchPopupVideo, updatePopupVideo,
-  uploadProjectImage,
+  uploadProjectImage, uploadPopupVideo, deletePopupVideoFile,
 } from '../../lib/db';
 import AdminProfile from '../../components/AdminProfile.jsx';
 import ProjectsManager from '../../components/ProjectsManager.jsx';
@@ -271,44 +271,201 @@ function getYouTubeEmbedUrl(url) {
 
 function PopupVideoPanel() {
   const [config, setConfig] = useState(null);
-  const [url, setUrl] = useState('');
+  const [videoType, setVideoType] = useState('youtube'); // 'youtube' | 'upload'
+  const [youtubeUrl, setYoutubeUrl] = useState('');
+  const [uploadedUrl, setUploadedUrl] = useState('');
   const [active, setActive] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [err, setErr] = useState('');
 
+  // Upload state
+  const [uploadFile, setUploadFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState('');
+  const [uploadErr, setUploadErr] = useState('');
+  const fileInputRef = useRef(null);
+
   useEffect(() => {
     fetchPopupVideo().then(cfg => {
-      if (cfg) { setConfig(cfg); setUrl(cfg.youtube_url || ''); setActive(cfg.is_active || false); }
+      if (cfg) {
+        setConfig(cfg);
+        setYoutubeUrl(cfg.youtube_url || '');
+        setUploadedUrl(cfg.uploaded_video_url || '');
+        setVideoType(cfg.video_type || 'youtube');
+        setActive(cfg.is_active || false);
+      }
     }).catch(() => {});
   }, []);
 
-  const embedUrl = getYouTubeEmbedUrl(url);
+  const embedUrl = getYouTubeEmbedUrl(youtubeUrl);
 
   const handleSave = async () => {
     setSaving(true); setErr('');
     try {
-      await updatePopupVideo(url.trim(), active);
-      setSaved(true); setConfig({ ...config, youtube_url: url.trim(), is_active: active });
+      await updatePopupVideo({
+        youtube_url: youtubeUrl.trim(),
+        uploaded_video_url: uploadedUrl,
+        video_type: videoType,
+        is_active: active,
+      });
+      setSaved(true);
+      setConfig(c => ({ ...c, youtube_url: youtubeUrl.trim(), uploaded_video_url: uploadedUrl, video_type: videoType, is_active: active }));
       setTimeout(() => setSaved(false), 2500);
     } catch (e) { setErr(e.message); }
     finally { setSaving(false); }
   };
 
+  const handleFileSelect = (e) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    if (!f.type.startsWith('video/')) { setUploadErr('Please select a video file (MP4, WebM, MOV).'); return; }
+    if (f.size > 100 * 1024 * 1024) { setUploadErr('File must be under 100 MB.'); return; }
+    setUploadFile(f);
+    setUploadErr('');
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const f = e.dataTransfer.files?.[0];
+    if (!f) return;
+    if (!f.type.startsWith('video/')) { setUploadErr('Please drop a video file (MP4, WebM, MOV).'); return; }
+    if (f.size > 100 * 1024 * 1024) { setUploadErr('File must be under 100 MB.'); return; }
+    setUploadFile(f);
+    setUploadErr('');
+  };
+
+  const handleUpload = async () => {
+    if (!uploadFile) return;
+    setUploading(true); setUploadProgress('Uploading video…'); setUploadErr('');
+    try {
+      // Delete old uploaded video if replacing
+      if (uploadedUrl) {
+        await deletePopupVideoFile(uploadedUrl).catch(() => {});
+      }
+      const url = await uploadPopupVideo(uploadFile);
+      setUploadedUrl(url);
+      setUploadFile(null);
+      setUploadProgress('');
+      // Auto-save after upload
+      await updatePopupVideo({
+        youtube_url: youtubeUrl.trim(),
+        uploaded_video_url: url,
+        video_type: 'upload',
+        is_active: active,
+      });
+      setVideoType('upload');
+      setConfig(c => ({ ...c, uploaded_video_url: url, video_type: 'upload', is_active: active }));
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (e) {
+      setUploadErr(e.message);
+      setUploadProgress('');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemoveUpload = async () => {
+    if (!uploadedUrl) return;
+    await deletePopupVideoFile(uploadedUrl).catch(() => {});
+    setUploadedUrl('');
+    setUploadFile(null);
+    if (videoType === 'upload') setVideoType('youtube');
+    await updatePopupVideo({ uploaded_video_url: '', video_type: 'youtube' });
+    setConfig(c => ({ ...c, uploaded_video_url: '', video_type: 'youtube' }));
+  };
+
+  const previewActive = active && (videoType === 'youtube' ? !!embedUrl : !!uploadedUrl);
+
   return (
     <div>
       <h2 className="font-playfair font-bold text-2xl text-stone-800 mb-2">Popup Video</h2>
-      <p className="text-stone-400 text-sm mb-6">Configure the YouTube video that auto-plays inside the inquiry popup shown to site visitors.</p>
+      <p className="text-stone-400 text-sm mb-6">Configure the video that auto-plays inside the inquiry popup shown to site visitors. Choose between a YouTube link or a locally uploaded video stored in Supabase.</p>
+
+      {/* Video type selector */}
+      <div className="flex gap-3 mb-6">
+        {[{ id: 'youtube', label: 'YouTube Link' }, { id: 'upload', label: 'Upload Video' }].map(({ id, label }) => (
+          <button
+            key={id}
+            onClick={() => { setVideoType(id); setSaved(false); }}
+            className={`px-5 py-2 rounded-xl text-sm font-semibold border transition-all ${videoType === id ? 'bg-vvva-orange text-white border-vvva-orange shadow-sm' : 'bg-white text-stone-500 border-stone-200 hover:border-stone-300'}`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
       <div className="grid md:grid-cols-2 gap-6">
+        {/* Left: config */}
         <div className="bg-white rounded-xl border border-stone-100 shadow-sm p-6 space-y-5">
-          <div>
-            <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">YouTube Video URL</label>
-            <input type="url" value={url} onChange={e => { setUrl(e.target.value); setSaved(false); }}
-              placeholder="https://www.youtube.com/watch?v=..."
-              className="w-full border border-stone-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-vvva-orange/25 focus:border-vvva-orange"
-            />
-            <p className="text-xs text-stone-400 mt-1.5">Paste a YouTube share link or full URL.</p>
-          </div>
+
+          {videoType === 'youtube' ? (
+            <div>
+              <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">YouTube Video URL</label>
+              <input type="url" value={youtubeUrl} onChange={e => { setYoutubeUrl(e.target.value); setSaved(false); }}
+                placeholder="https://www.youtube.com/watch?v=..."
+                className="w-full border border-stone-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-vvva-orange/25 focus:border-vvva-orange"
+              />
+              <p className="text-xs text-stone-400 mt-1.5">Paste a YouTube share link or full URL.</p>
+            </div>
+          ) : (
+            <div>
+              <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">Upload Video File</label>
+
+              {uploadedUrl && !uploadFile ? (
+                <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <FontAwesomeIcon icon={faVideo} className="text-green-600 shrink-0" />
+                    <span className="text-xs text-green-700 font-medium truncate">Video uploaded to Supabase</span>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <a href={uploadedUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline">
+                      <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="text-xs" />
+                    </a>
+                    <button onClick={handleRemoveUpload} className="text-xs text-red-400 hover:text-red-600">
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+
+              <div
+                onDrop={handleDrop}
+                onDragOver={e => e.preventDefault()}
+                onClick={() => fileInputRef.current?.click()}
+                className="mt-2 cursor-pointer border-2 border-dashed border-stone-200 hover:border-vvva-orange/50 rounded-xl transition-colors px-4 py-8 flex flex-col items-center gap-2 text-center"
+              >
+                <FontAwesomeIcon icon={faVideo} className="text-3xl text-stone-300" />
+                {uploadFile ? (
+                  <p className="text-sm font-medium text-stone-700">{uploadFile.name} <span className="text-stone-400 font-normal">({(uploadFile.size / (1024*1024)).toFixed(1)} MB)</span></p>
+                ) : (
+                  <>
+                    <p className="text-sm font-medium text-stone-500">Click or drag & drop a video</p>
+                    <p className="text-xs text-stone-400">MP4, WebM, MOV · max 100 MB</p>
+                  </>
+                )}
+                <input ref={fileInputRef} type="file" accept="video/mp4,video/webm,video/quicktime,video/*" className="hidden" onChange={handleFileSelect} />
+              </div>
+
+              {uploadErr && <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2 mt-2">{uploadErr}</p>}
+              {uploadProgress && <p className="text-xs text-vvva-orange font-medium mt-1">{uploadProgress}</p>}
+
+              {uploadFile && (
+                <button
+                  onClick={handleUpload}
+                  disabled={uploading}
+                  className="w-full mt-2 flex items-center justify-center gap-2 bg-vvva-orange hover:bg-orange-600 text-white font-semibold py-2.5 rounded-xl text-sm disabled:opacity-60 transition-colors"
+                >
+                  {uploading
+                    ? <><FontAwesomeIcon icon={faSpinner} className="animate-spin" /> Uploading…</>
+                    : <><FontAwesomeIcon icon={faVideo} /> Upload to Supabase</>
+                  }
+                </button>
+              )}
+            </div>
+          )}
+
           <div>
             <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">Status</label>
             <button onClick={() => { setActive(a => !a); setSaved(false); }}
@@ -317,37 +474,71 @@ function PopupVideoPanel() {
               {active ? 'Popup video is ON' : 'Popup video is OFF'}
             </button>
           </div>
+
           {err && <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{err}</p>}
+
           <button onClick={handleSave} disabled={saving}
             className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-colors ${saved ? 'bg-green-500 text-white' : 'bg-vvva-orange hover:bg-orange-600 text-white disabled:opacity-60'}`}>
             {saved ? <><FontAwesomeIcon icon={faCheck} /> Saved!</> : saving ? 'Saving…' : 'Save Changes'}
           </button>
         </div>
+
+        {/* Right: preview */}
         <div className="bg-white rounded-xl border border-stone-100 shadow-sm p-6">
           <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-3">Preview</p>
-          {embedUrl ? (
-            <div className="rounded-xl overflow-hidden border border-stone-100 relative w-full" style={{ paddingBottom: '56.25%', height: 0 }}>
-              <iframe
-                src={embedUrl}
-                title="Preview"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
-                className="absolute inset-0 w-full h-full"
-                style={{ border: 0 }}
-              />
-            </div>
-          ) : (
-            <div className="rounded-xl bg-stone-50 border border-stone-100 flex flex-col items-center justify-center gap-3 text-stone-300 relative w-full" style={{ paddingBottom: '56.25%', height: 0 }}>
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                <FontAwesomeIcon icon={faVideo} className="text-4xl" />
-                <span className="text-xs text-stone-400">Enter a valid YouTube URL to preview</span>
+
+          {videoType === 'youtube' ? (
+            embedUrl ? (
+              <div className="rounded-xl overflow-hidden border border-stone-100 relative w-full" style={{ paddingBottom: '56.25%', height: 0 }}>
+                <iframe
+                  src={embedUrl}
+                  title="Preview"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                  className="absolute inset-0 w-full h-full"
+                  style={{ border: 0 }}
+                />
               </div>
+            ) : (
+              <div className="rounded-xl bg-stone-50 border border-stone-100 relative w-full" style={{ paddingBottom: '56.25%', height: 0 }}>
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-stone-300">
+                  <FontAwesomeIcon icon={faVideo} className="text-4xl" />
+                  <span className="text-xs text-stone-400">Enter a valid YouTube URL to preview</span>
+                </div>
+              </div>
+            )
+          ) : (
+            uploadedUrl ? (
+              <div className="rounded-xl overflow-hidden border border-stone-100">
+                <video
+                  src={uploadedUrl}
+                  controls
+                  muted
+                  className="w-full"
+                  style={{ maxHeight: '260px', background: '#000' }}
+                />
+              </div>
+            ) : (
+              <div className="rounded-xl bg-stone-50 border border-stone-100 relative w-full" style={{ paddingBottom: '56.25%', height: 0 }}>
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-stone-300">
+                  <FontAwesomeIcon icon={faVideo} className="text-4xl" />
+                  <span className="text-xs text-stone-400">Upload a video to preview it here</span>
+                </div>
+              </div>
+            )
+          )}
+
+          <div className="mt-3 flex items-center gap-2 text-xs text-stone-400">
+            <span className={`w-2 h-2 rounded-full ${previewActive ? 'bg-green-500' : 'bg-stone-300'}`} />
+            {previewActive ? 'Video will appear in popup' : 'Video will NOT appear in popup'}
+          </div>
+
+          {videoType === 'upload' && uploadedUrl && (
+            <div className="mt-3 p-3 bg-stone-50 rounded-lg border border-stone-100">
+              <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-wide mb-1">Storage URL</p>
+              <p className="text-[11px] text-stone-500 break-all font-mono leading-relaxed">{uploadedUrl}</p>
             </div>
           )}
-          <div className="mt-3 flex items-center gap-2 text-xs text-stone-400">
-            <span className={`w-2 h-2 rounded-full ${active && embedUrl ? 'bg-green-500' : 'bg-stone-300'}`} />
-            {active && embedUrl ? 'Video will appear in popup' : 'Video will NOT appear in popup'}
-          </div>
         </div>
       </div>
     </div>
@@ -784,7 +975,7 @@ export default function AdminDashboard() {
           lg:sticky lg:top-0 lg:self-start lg:z-auto lg:translate-x-0
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}
-        style={{ width: '260px', height: '100vh' }}
+        style={{ width: 'min(260px, 100vw)', height: '100vh' }}
       >
         {/* Logo */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-stone-800 shrink-0">
