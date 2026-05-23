@@ -4,7 +4,11 @@ import { faXmark, faPhone } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { fetchPopupVideo } from '../lib/db';
 
-const PHONE = '+919845659193';
+const MAIN_PHONE = '+919845659193';
+const SUB_PHONES = [
+  { display: '+91 72044 01456', tel: '+917204401456', wa: '917204401456' },
+  { display: '+91 93536 40323', tel: '+919353640323', wa: '919353640323' },
+];
 const WA_PHONE = '919845659193';
 const SHOW_AFTER_MS = 2000;
 
@@ -113,13 +117,26 @@ export default function InquiryPopup() {
 
           <div className="flex flex-col gap-3">
             <a
-              href={`tel:${PHONE}`}
+              href={`tel:${MAIN_PHONE}`}
               onClick={dismiss}
               className="flex items-center justify-center gap-2 bg-vvva-orange text-white font-semibold py-3 rounded-xl hover:bg-orange-600 active:scale-[0.98] transition-all duration-150 shadow-sm"
             >
               <FontAwesomeIcon icon={faPhone} />
               Call Us Now
             </a>
+            <div className="grid grid-cols-2 gap-2">
+              {SUB_PHONES.map(({ display, tel }) => (
+                <a
+                  key={tel}
+                  href={`tel:${tel}`}
+                  onClick={dismiss}
+                  className="flex items-center justify-center gap-1.5 border border-vvva-orange/30 text-vvva-orange text-xs font-semibold py-2.5 rounded-xl hover:bg-vvva-orange/5 active:scale-[0.98] transition-all duration-150"
+                >
+                  <FontAwesomeIcon icon={faPhone} className="text-[10px]" />
+                  {display}
+                </a>
+              ))}
+            </div>
             <a
               href={`https://wa.me/${WA_PHONE}?text=Hello%2C%20I%20am%20interested%20in%20your%20properties.%20Please%20guide%20me.`}
               target="_blank"

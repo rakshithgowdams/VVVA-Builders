@@ -82,9 +82,9 @@ export default function Footer() {
               </a>
             </div>
             <div className="text-sm text-white/60 space-y-1.5">
-              <p>+91 98456 59193</p>
+              <p>+91 98456 59193 · +91 72044 01456 · +91 93536 40323</p>
               <p>info@vvvadeveloper.com</p>
-              <p>Bengaluru, Karnataka, India</p>
+              <p>Opp Canara Bank, Near MCE College,<br />Salagame Road, Hassan – 573201</p>
             </div>
           </div>
         </div>

@@ -9,7 +9,7 @@ import { submitEnquiry } from '../lib/db';
 function WhatsAppFab() {
   return (
     <a
-      href="https://wa.me/919999999999"
+      href="https://wa.me/919845659193"
       target="_blank"
       rel="noopener noreferrer"
       className="fixed bottom-6 right-6 z-40 bg-green-500 hover:bg-green-600 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-colors duration-150"
@@ -39,8 +39,10 @@ function Toast({ message, onClose }) {
 
 const CONTACT_INFO = [
   { icon: faPhone, label: 'Phone', value: '+91 98456 59193', href: 'tel:+919845659193' },
+  { icon: faPhone, label: 'Phone 2', value: '+91 72044 01456', href: 'tel:+917204401456' },
+  { icon: faPhone, label: 'Phone 3', value: '+91 93536 40323', href: 'tel:+919353640323' },
   { icon: faEnvelope, label: 'Email', value: 'info@vvvadeveloper.com', href: 'mailto:info@vvvadeveloper.com' },
-  { icon: faLocationDot, label: 'Address', value: '123, MG Road, Bengaluru, Karnataka 560001', href: null },
+  { icon: faLocationDot, label: 'Address', value: 'Opp Canara Bank, Near MCE College, Salagame Road, Hassan – 573201', href: null },
   { icon: faClock, label: 'Office Hours', value: 'Mon–Sat: 9:00 AM – 6:00 PM', href: null },
 ];
 
