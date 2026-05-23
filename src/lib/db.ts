@@ -238,6 +238,14 @@ export async function deletePlotSlot(slotId: number): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
+export async function updatePlotSlot(slotId: number, input: Partial<Omit<PlotSlotInput, 'project_id'>>): Promise<void> {
+  const { error } = await supabase
+    .from('plot_slots')
+    .update({ ...input, updated_at: new Date().toISOString() })
+    .eq('id', slotId);
+  if (error) throw new Error(error.message);
+}
+
 export async function updateProjectGoogleMapsUrl(projectId: number, google_maps_url: string): Promise<void> {
   const { error } = await supabase
     .from('projects')

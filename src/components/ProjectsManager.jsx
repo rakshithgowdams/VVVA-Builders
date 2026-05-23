@@ -8,7 +8,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import {
   createProject, updateProject, deleteProject,
-  addPlotSlot, deletePlotSlot, addProjectImage, deleteProjectImage,
+  addPlotSlot, deletePlotSlot, updatePlotSlot, addProjectImage, deleteProjectImage,
   updatePlotStatus, uploadProjectImage,
 } from '../lib/db';
 
@@ -420,6 +420,94 @@ function AddPlotForm({ projectId, onAdded, onClose }) {
   );
 }
 
+// ── Edit Plot Form ─────────────────────────────────────────────────────────────
+function EditPlotForm({ slot, onSaved, onClose }) {
+  const [form, setForm] = useState({
+    bite_no: String(slot.bite_no),
+    dimensions: slot.dimensions || '',
+    sqft: String(slot.sqft),
+    direction: slot.direction || 'North',
+    status: slot.status || 'available',
+    price_lakhs: String(slot.price_lakhs),
+    details: slot.details || '',
+  });
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState('');
+  const set = (key) => (val) => setForm(f => ({ ...f, [key]: val }));
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.bite_no || !form.dimensions || !form.sqft || !form.price_lakhs) {
+      setErr('Plot No, Dimensions, Sqft and Price are required.'); return;
+    }
+    setErr(''); setSaving(true);
+    try {
+      await updatePlotSlot(slot.id, {
+        bite_no: parseInt(form.bite_no),
+        dimensions: form.dimensions,
+        sqft: parseInt(form.sqft),
+        direction: form.direction,
+        status: form.status,
+        price_lakhs: parseFloat(form.price_lakhs),
+        details: form.details,
+      });
+      onSaved();
+      onClose();
+    } catch (e) { setErr(e.message); }
+    finally { setSaving(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/60 px-4">
+      <div className="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h3 className="font-semibold text-stone-800">Edit Plot #{slot.bite_no}</h3>
+            <p className="text-xs text-stone-400 mt-0.5">Update plot details below</p>
+          </div>
+          <button onClick={onClose} className="text-stone-400 hover:text-stone-600 p-1"><FontAwesomeIcon icon={faXmark} /></button>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Plot No" required>
+              <Input type="number" value={form.bite_no} onChange={set('bite_no')} placeholder="1" />
+            </Field>
+            <Field label="Dimensions (ft)" required>
+              <Input value={form.dimensions} onChange={set('dimensions')} placeholder="30×40" />
+            </Field>
+            <Field label="Area (sqft)" required>
+              <Input type="number" value={form.sqft} onChange={set('sqft')} placeholder="1200" />
+            </Field>
+            <Field label="Price (Lakhs)" required>
+              <Input type="number" value={form.price_lakhs} onChange={set('price_lakhs')} placeholder="45" />
+            </Field>
+            <Field label="Facing Direction">
+              <Select value={form.direction} onChange={set('direction')} options={DIRECTION_OPTS} />
+            </Field>
+            <Field label="Status">
+              <Select value={form.status} onChange={set('status')} options={PLOT_STATUS_OPTS} />
+            </Field>
+          </div>
+          <Field label="Details (optional)">
+            <Textarea value={form.details} onChange={set('details')} placeholder="Any extra details..." rows={2} />
+          </Field>
+          {err && <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{err}</p>}
+          <div className="flex gap-3 pt-1">
+            <button type="button" onClick={onClose}
+              className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-stone-600 border border-stone-200 hover:bg-stone-50 transition-colors">
+              Cancel
+            </button>
+            <button type="submit" disabled={saving}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold bg-vvva-orange text-white disabled:opacity-60 transition-colors">
+              {saving ? <><FontAwesomeIcon icon={faSpinner} className="animate-spin text-xs" /> Saving…</> : <><FontAwesomeIcon icon={faCheck} className="text-xs" /> Save Changes</>}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 // ── Add Image Modal ────────────────────────────────────────────────────────────
 function AddImageModal({ projectId, onClose, onAdded }) {
   const [file, setFile] = useState(null);
@@ -522,6 +610,7 @@ function ProjectDetail({ project, onRefresh, onEdit, onBack }) {
   const [addPlot, setAddPlot] = useState(false);
   const [addImage, setAddImage] = useState(false);
   const [deletingPlot, setDeletingPlot] = useState(null);
+  const [editingPlot, setEditingPlot] = useState(null);
 
   const handleDeletePlot = async (id) => {
     if (!confirm('Delete this plot slot? This cannot be undone.')) return;
@@ -649,7 +738,7 @@ function ProjectDetail({ project, onRefresh, onEdit, onBack }) {
               <table className="w-full text-xs">
                 <thead>
                   <tr className="bg-stone-50">
-                    {['Plot #', 'Dimensions', 'Sqft', 'Facing', 'Price', 'Status', 'Change', 'Delete'].map(h => (
+                    {['Plot #', 'Dimensions', 'Sqft', 'Facing', 'Price', 'Status', 'Actions'].map(h => (
                       <th key={h} className="px-3 py-2 text-left text-[10px] font-semibold text-stone-400 uppercase">{h}</th>
                     ))}
                   </tr>
@@ -666,16 +755,35 @@ function ProjectDetail({ project, onRefresh, onEdit, onBack }) {
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${PLOT_BADGE[slot.status]}`}>{slot.status}</span>
                       </td>
                       <td className="px-3 py-2.5">
-                        <select value={slot.status} onChange={e => handlePlotStatus(slot.id, e.target.value)}
-                          className="text-[10px] border border-stone-200 rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-vvva-orange/30">
-                          {PLOT_STATUS_OPTS.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
-                        </select>
-                      </td>
-                      <td className="px-3 py-2.5">
-                        <button onClick={() => handleDeletePlot(slot.id)} disabled={deletingPlot === slot.id}
-                          className="text-red-400 hover:text-red-600 disabled:opacity-40 p-1 rounded hover:bg-red-50 transition-colors">
-                          <FontAwesomeIcon icon={deletingPlot === slot.id ? faSpinner : faTrash} className={`text-xs ${deletingPlot === slot.id ? 'animate-spin' : ''}`} />
-                        </button>
+                        <div className="flex items-center gap-1.5">
+                          {/* Edit */}
+                          <button
+                            onClick={() => setEditingPlot(slot)}
+                            title="Edit plot"
+                            className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold text-vvva-orange border border-vvva-orange/30 hover:bg-vvva-orange/5 transition-colors"
+                          >
+                            <FontAwesomeIcon icon={faPencil} className="text-[10px]" /> Edit
+                          </button>
+                          {/* Quick status */}
+                          <select
+                            value={slot.status}
+                            onChange={e => handlePlotStatus(slot.id, e.target.value)}
+                            title="Change status"
+                            className="text-[10px] border border-stone-200 rounded-lg px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-vvva-orange/30 bg-white"
+                          >
+                            {PLOT_STATUS_OPTS.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+                          </select>
+                          {/* Delete */}
+                          <button
+                            onClick={() => handleDeletePlot(slot.id)}
+                            disabled={deletingPlot === slot.id}
+                            title="Delete plot"
+                            className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold text-red-500 border border-red-100 hover:bg-red-50 disabled:opacity-40 transition-colors"
+                          >
+                            <FontAwesomeIcon icon={deletingPlot === slot.id ? faSpinner : faTrash} className={`text-[10px] ${deletingPlot === slot.id ? 'animate-spin' : ''}`} />
+                            {deletingPlot !== slot.id && 'Del'}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -687,6 +795,7 @@ function ProjectDetail({ project, onRefresh, onEdit, onBack }) {
       </div>
 
       {addPlot && <AddPlotForm projectId={project.id} onAdded={onRefresh} onClose={() => setAddPlot(false)} />}
+      {editingPlot && <EditPlotForm slot={editingPlot} onSaved={onRefresh} onClose={() => setEditingPlot(null)} />}
       {addImage && <AddImageModal projectId={project.id} onAdded={onRefresh} onClose={() => setAddImage(false)} />}
     </div>
   );
