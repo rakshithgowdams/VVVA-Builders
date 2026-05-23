@@ -24,8 +24,8 @@ const VALUES = [
 ];
 
 const JOURNEY = [
-  { year: '2015', title: 'Founded', desc: 'VVVA Developer was established with the vision of making residential plot ownership transparent and accessible across Bengaluru.' },
-  { year: '2017', title: 'First 10 Projects', desc: 'Crossed the milestone of 10 completed layouts in Bengaluru East corridor, earning the trust of over 80 families.' },
+  { year: '2015', title: 'Founded', desc: 'VVVA Developer was established with the vision of making residential plot ownership transparent and accessible across Hassan.' },
+  { year: '2017', title: 'First 10 Projects', desc: 'Crossed the milestone of 10 completed layouts in Hassan East corridor, earning the trust of over 80 families.' },
   { year: '2019', title: 'RERA Registration', desc: 'Became fully RERA-compliant, setting a new standard for documentation and transparency in plot development.' },
   { year: '2021', title: 'Expansion Phase', desc: 'Expanded into Sarjapur Road and Whitefield growth corridors, doubling the project pipeline.' },
   { year: '2023', title: '500+ Families', desc: 'Celebrated the milestone of 500+ families who have built their homes on VVVA Developer plots.' },
@@ -56,7 +56,7 @@ const TESTIMONIALS = [
   },
   {
     name: 'Kavitha & Arun Sharma',
-    location: 'Bengaluru East Layout, Plot #312',
+    location: 'Hassan East Layout, Plot #312',
     text: 'What sets VVVA apart is their after-sale service. Even after we registered the plot, their team helped us coordinate with the BBMP for approval. Truly a partner, not just a seller.',
     rating: 5,
   },
@@ -136,11 +136,11 @@ export default function About() {
             <div>
               <span className="text-vvva-orange text-xs font-semibold tracking-widest uppercase">Who We Are</span>
               <h2 className="font-playfair font-bold text-3xl text-vvva-black mt-2 mb-5">
-                Bengaluru's Trusted Residential Plot Developer
+                Hassan's Trusted Residential Plot Developer
               </h2>
               <div className="space-y-4 text-gray-600 leading-relaxed text-[15px]">
-                <p>Founded in 2015, VVVA Developer has grown to become one of Bengaluru's most respected residential plot developers. We started with a simple belief — every family deserves a piece of land to call their own.</p>
-                <p>Over the past decade, we have developed more than 50 residential layout projects across Bengaluru East, Sarjapur, Whitefield, and surrounding growth corridors. All plots are RERA-registered and legally clear.</p>
+                <p>Founded in 2015, VVVA Developer has grown to become one of Hassan's most respected residential plot developers. We started with a simple belief — every family deserves a piece of land to call their own.</p>
+                <p>Over the past decade, we have developed more than 50 residential layout projects across Hassan East, Sarjapur, Whitefield, and surrounding growth corridors. All plots are RERA-registered and legally clear.</p>
                 <p>Today, over 500 families have built their homes on VVVA Developer plots — and that number grows every year.</p>
               </div>
             </div>
@@ -153,7 +153,7 @@ export default function About() {
                     <circle cx="32" cy="32" r="8" fill="white"/>
                   </svg>
                   <p className="font-playfair font-bold text-xl">VVVA Developer</p>
-                  <p className="text-white/70 text-sm mt-1">Est. 2015, Bengaluru</p>
+                  <p className="text-white/70 text-sm mt-1">Est. 2015, Hassan</p>
                 </div>
               </div>
               <div className="absolute -bottom-4 -right-4 bg-vvva-orange text-white rounded-card px-5 py-3 shadow-lg">
@@ -208,7 +208,7 @@ export default function About() {
               The VVVA Journey
             </h2>
             <p className="text-gray-500 text-sm mt-3 max-w-xl mx-auto">
-              From a single vision to one of Bengaluru's most trusted developers — here's how it happened.
+              From a single vision to one of Hassan's most trusted developers — here's how it happened.
             </p>
           </div>
           <div className="relative">
@@ -372,7 +372,7 @@ export default function About() {
             Ready to find your plot?
           </h2>
           <p className="text-white/60 mb-8 text-sm">
-            Browse our current projects across Bengaluru and take the first step toward owning your dream plot.
+            Browse our current projects across Hassan and take the first step toward owning your dream plot.
           </p>
           <Link
             to="/#projects"
