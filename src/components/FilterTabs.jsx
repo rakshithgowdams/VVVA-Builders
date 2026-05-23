@@ -2,7 +2,7 @@ const TABS = [
   { label: 'All', value: 'all' },
   { label: 'Available', value: 'open' },
   { label: 'Upcoming', value: 'future' },
-  { label: 'Completed', value: 'closed' },
+  { label: 'Sold Out', value: 'closed' },
 ];
 
 export default function FilterTabs({ active, onChange }) {
