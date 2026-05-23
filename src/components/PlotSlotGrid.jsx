@@ -90,6 +90,8 @@ export default function PlotSlotGrid({ slots = [], projectId, siteImage, project
             <img
               src={siteImage}
               alt="Site layout"
+              loading="lazy"
+              decoding="async"
               className="w-full h-full object-cover"
             />
           ) : (

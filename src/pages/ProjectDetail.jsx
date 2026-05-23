@@ -109,7 +109,13 @@ export default function ProjectDetail() {
       {/* Hero */}
       <section ref={heroRef} className="relative py-14 px-4 overflow-hidden">
         {project.cardImage && (
-          <img src={project.cardImage} alt={project.name} className="absolute inset-0 w-full h-full object-cover" />
+          <img
+            src={project.cardImage}
+            alt={project.name}
+            loading="lazy"
+            decoding="async"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
         )}
         <div className="absolute inset-0 bg-stone-900/70" />
         <div className="relative z-10 max-w-5xl mx-auto">

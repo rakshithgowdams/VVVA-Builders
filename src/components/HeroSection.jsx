@@ -35,6 +35,7 @@ function CountUp({ target, suffix = '', duration = 1800 }) {
 export default function HeroSection() {
   const heroRef = useRef(null);
   const [heroImg, setHeroImg] = useState({ url: '', alt: '' });
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   useEffect(() => {
     fetchSiteImageByKey('hero_background')
@@ -52,14 +53,21 @@ export default function HeroSection() {
       ref={heroRef}
       className="relative w-full min-h-screen flex items-center justify-center overflow-hidden"
     >
-      {/* Hero background image */}
+      {/* Hero background image with blur-up reveal */}
       {heroImg.url && (
         <img
           src={heroImg.url}
           alt={heroImg.alt || ''}
           aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover object-center"
+          fetchpriority="high"
+          decoding="async"
+          onLoad={() => setImgLoaded(true)}
+          className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-700 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
         />
+      )}
+      {/* Placeholder while image loads */}
+      {!imgLoaded && (
+        <div className="absolute inset-0 bg-stone-900" />
       )}
 
       {/* Dark gradient overlay for readability */}
