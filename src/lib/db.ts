@@ -352,3 +352,19 @@ export async function fetchSiteImageByKey(key: string): Promise<SiteImage | null
   if (error) throw new Error(error.message);
   return data;
 }
+
+// ── Project Image Upload ───────────────────────────────────────────────────────
+
+export async function uploadProjectImage(file: File, folder: string = 'gallery'): Promise<string> {
+  const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+  const filename = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+  const { error } = await supabase.storage
+    .from('project-images')
+    .upload(filename, file, { upsert: false, contentType: file.type });
+
+  if (error) throw new Error(error.message);
+
+  const { data } = supabase.storage.from('project-images').getPublicUrl(filename);
+  return data.publicUrl;
+}

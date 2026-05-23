@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -9,7 +9,7 @@ import {
 import {
   createProject, updateProject, deleteProject,
   addPlotSlot, deletePlotSlot, addProjectImage, deleteProjectImage,
-  updatePlotStatus,
+  updatePlotStatus, uploadProjectImage,
 } from '../lib/db';
 
 const STATUS_OPTS = ['open', 'future', 'closed'];
@@ -90,6 +90,66 @@ function EMPTY_FORM() {
 }
 
 // ── Project Form (full create/edit) ───────────────────────────────────────────
+// ── Image upload field used in ProjectForm ─────────────────────────────────────
+function ImageUploadField({ label, hint, currentUrl, onUploaded, folder }) {
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState(currentUrl || '');
+  const [uploading, setUploading] = useState(false);
+  const [uploadErr, setUploadErr] = useState('');
+  const ref = useRef(null);
+
+  const handleFile = async (f) => {
+    if (!f || !f.type.startsWith('image/')) return;
+    setFile(f);
+    const localPreview = URL.createObjectURL(f);
+    setPreview(localPreview);
+    setUploadErr('');
+    setUploading(true);
+    try {
+      const url = await uploadProjectImage(f, folder);
+      onUploaded(url);
+    } catch (e) {
+      setUploadErr(e.message);
+      setPreview(currentUrl || '');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <Field label={label} hint={hint}>
+      <div
+        onClick={() => ref.current?.click()}
+        onDrop={e => { e.preventDefault(); handleFile(e.dataTransfer.files?.[0]); }}
+        onDragOver={e => e.preventDefault()}
+        className="relative cursor-pointer border-2 border-dashed border-stone-200 hover:border-vvva-orange/50 rounded-xl transition-colors overflow-hidden"
+        style={{ minHeight: '90px' }}
+      >
+        {preview ? (
+          <div className="relative">
+            <img src={preview} alt={label} className="w-full h-24 object-cover" />
+            {uploading && (
+              <div className="absolute inset-0 bg-white/70 flex items-center justify-center gap-2 text-xs text-vvva-orange font-semibold">
+                <FontAwesomeIcon icon={faSpinner} className="animate-spin" /> Uploading…
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center gap-1 py-6 text-stone-400">
+            {uploading
+              ? <><FontAwesomeIcon icon={faSpinner} className="animate-spin text-vvva-orange text-lg" /><span className="text-xs text-vvva-orange font-medium">Uploading…</span></>
+              : <><FontAwesomeIcon icon={faImage} className="text-2xl text-stone-300" /><span className="text-xs">Click or drag &amp; drop</span></>
+            }
+          </div>
+        )}
+        <input ref={ref} type="file" accept="image/*" className="hidden" onChange={e => handleFile(e.target.files?.[0])} />
+      </div>
+      {file && !uploadErr && !uploading && <p className="text-[11px] text-green-600 mt-1">Uploaded successfully</p>}
+      {uploadErr && <p className="text-[11px] text-red-500 mt-1">{uploadErr}</p>}
+    </Field>
+  );
+}
+
 function ProjectForm({ project, onSaved, onCancel }) {
   const isEdit = !!project;
   const [form, setForm] = useState(() =>
@@ -205,24 +265,27 @@ function ProjectForm({ project, onSaved, onCancel }) {
                 <FontAwesomeIcon icon={faImage} className="text-vvva-orange text-sm" />
                 <h3 className="font-semibold text-stone-800 text-sm">Images</h3>
               </div>
-              <Field label="Card Image URL" hint="Shown on the project listing card">
-                <Input value={form.card_image_url} onChange={set('card_image_url')} placeholder="https://... or /image.webp" />
-                {form.card_image_url && (
-                  <img src={form.card_image_url} alt="card preview" className="mt-2 h-20 w-full object-cover rounded-lg border border-stone-100" />
-                )}
-              </Field>
-              <Field label="Hero Image URL" hint="Large banner on project detail page">
-                <Input value={form.hero_image_url} onChange={set('hero_image_url')} placeholder="https://... or /image.webp" />
-                {form.hero_image_url && (
-                  <img src={form.hero_image_url} alt="hero preview" className="mt-2 h-20 w-full object-cover rounded-lg border border-stone-100" />
-                )}
-              </Field>
-              <Field label="Site Layout Image URL" hint="Plot layout / site map image">
-                <Input value={form.site_layout_image_url} onChange={set('site_layout_image_url')} placeholder="https://... or /image.webp" />
-                {form.site_layout_image_url && (
-                  <img src={form.site_layout_image_url} alt="layout preview" className="mt-2 h-20 w-full object-cover rounded-lg border border-stone-100" />
-                )}
-              </Field>
+              <ImageUploadField
+                label="Card Image"
+                hint="Shown on the project listing card"
+                currentUrl={form.card_image_url}
+                onUploaded={set('card_image_url')}
+                folder="card"
+              />
+              <ImageUploadField
+                label="Hero Image"
+                hint="Large banner on project detail page"
+                currentUrl={form.hero_image_url}
+                onUploaded={set('hero_image_url')}
+                folder="hero"
+              />
+              <ImageUploadField
+                label="Site Layout Image"
+                hint="Plot layout / site map image"
+                currentUrl={form.site_layout_image_url}
+                onUploaded={set('site_layout_image_url')}
+                folder="layout"
+              />
             </div>
 
             <div className="bg-white rounded-2xl border border-stone-100 shadow-sm p-6 space-y-5">
@@ -359,17 +422,47 @@ function AddPlotForm({ projectId, onAdded, onClose }) {
 
 // ── Add Image Modal ────────────────────────────────────────────────────────────
 function AddImageModal({ projectId, onClose, onAdded }) {
-  const [url, setUrl] = useState('');
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState('');
   const [caption, setCaption] = useState('');
   const [saving, setSaving] = useState(false);
+  const [progress, setProgress] = useState('');
   const [err, setErr] = useState('');
+  const inputRef = useRef(null);
+
+  const handleFileChange = (e) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setFile(f);
+    setPreview(URL.createObjectURL(f));
+    setErr('');
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const f = e.dataTransfer.files?.[0];
+    if (!f || !f.type.startsWith('image/')) return;
+    setFile(f);
+    setPreview(URL.createObjectURL(f));
+    setErr('');
+  };
 
   const handleAdd = async () => {
-    if (!url.trim()) { setErr('URL is required'); return; }
+    if (!file) { setErr('Please select an image file.'); return; }
     setSaving(true);
-    try { await addProjectImage(projectId, url.trim(), caption.trim()); onAdded(); onClose(); }
-    catch (e) { setErr(e.message); }
-    finally { setSaving(false); }
+    setProgress('Uploading image…');
+    try {
+      const publicUrl = await uploadProjectImage(file, 'gallery');
+      setProgress('Saving…');
+      await addProjectImage(projectId, publicUrl, caption.trim());
+      onAdded();
+      onClose();
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setSaving(false);
+      setProgress('');
+    }
   };
 
   return (
@@ -380,17 +473,43 @@ function AddImageModal({ projectId, onClose, onAdded }) {
           <button onClick={onClose} className="text-stone-400 hover:text-stone-600"><FontAwesomeIcon icon={faXmark} /></button>
         </div>
         <div className="space-y-4">
-          <Field label="Image URL" required>
-            <Input value={url} onChange={setUrl} placeholder="/gallery-1.webp or https://..." />
-            {url && <img src={url} alt="preview" className="mt-2 h-24 w-full object-cover rounded-lg border border-stone-100" onError={e => e.target.style.display='none'} />}
-          </Field>
+          <div
+            onDrop={handleDrop}
+            onDragOver={e => e.preventDefault()}
+            onClick={() => inputRef.current?.click()}
+            className="relative cursor-pointer border-2 border-dashed border-stone-200 hover:border-vvva-orange/50 rounded-xl transition-colors overflow-hidden"
+            style={{ minHeight: '140px' }}
+          >
+            {preview ? (
+              <img src={preview} alt="preview" className="w-full h-40 object-cover" />
+            ) : (
+              <div className="flex flex-col items-center justify-center gap-2 py-10 text-stone-400">
+                <FontAwesomeIcon icon={faImage} className="text-3xl text-stone-300" />
+                <p className="text-sm font-medium text-stone-500">Click or drag & drop an image</p>
+                <p className="text-xs text-stone-400">JPG, PNG, WebP · max 10 MB</p>
+              </div>
+            )}
+            <input
+              ref={inputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+          </div>
+          {file && (
+            <p className="text-xs text-stone-400 truncate">
+              {file.name} ({(file.size / 1024).toFixed(0)} KB)
+            </p>
+          )}
           <Field label="Caption (optional)">
             <Input value={caption} onChange={setCaption} placeholder="Short description" />
           </Field>
-          {err && <p className="text-xs text-red-500">{err}</p>}
-          <button onClick={handleAdd} disabled={saving}
-            className="w-full bg-vvva-orange text-white font-semibold py-2.5 rounded-xl text-sm disabled:opacity-60">
-            {saving ? 'Adding…' : 'Add Image'}
+          {err && <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{err}</p>}
+          {progress && <p className="text-xs text-vvva-orange font-medium">{progress}</p>}
+          <button onClick={handleAdd} disabled={saving || !file}
+            className="w-full bg-vvva-orange text-white font-semibold py-2.5 rounded-xl text-sm disabled:opacity-60 transition-opacity">
+            {saving ? <><FontAwesomeIcon icon={faSpinner} className="animate-spin mr-2" />Uploading…</> : 'Upload & Add Image'}
           </button>
         </div>
       </div>

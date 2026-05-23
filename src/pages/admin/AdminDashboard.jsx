@@ -6,13 +6,15 @@ import {
   faRightFromBracket, faTableColumns, faLocationDot, faChartBar,
   faUsers, faMessage, faChevronDown, faTrash, faPlus, faXmark,
   faArrowUpRightFromSquare, faCheck, faVideo, faToggleOn, faToggleOff,
-  faUserCircle, faUser, faBars, faBuilding, faPencil, faEye, faClock,
+  faUserCircle, faUser, faBars, faBuilding, faPencil, faEye, faClock, faImage,
+  faSpinner,
 } from '@fortawesome/free-solid-svg-icons';
 import { signOut, getAdminSession, getSessionExpiry } from '../../lib/adminAuth';
 import {
   fetchAllProjectsWithDetails, fetchEnquiries, updateEnquiryStatus,
   addProjectImage, deleteProjectImage, updatePlotStatus,
   updateProjectGoogleMapsUrl, fetchPopupVideo, updatePopupVideo,
+  uploadProjectImage,
 } from '../../lib/db';
 import AdminProfile from '../../components/AdminProfile.jsx';
 import ProjectsManager from '../../components/ProjectsManager.jsx';
@@ -112,22 +114,46 @@ function StatCard({ label, value, icon, color, delay }) {
 }
 
 function AddImageModal({ projectId, onClose, onAdded }) {
-  const [url, setUrl] = useState('');
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState('');
   const [caption, setCaption] = useState('');
   const [saving, setSaving] = useState(false);
+  const [progress, setProgress] = useState('');
   const [err, setErr] = useState('');
+  const inputRef = useRef(null);
+
+  const handleFileChange = (e) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setFile(f);
+    setPreview(URL.createObjectURL(f));
+    setErr('');
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const f = e.dataTransfer.files?.[0];
+    if (!f || !f.type.startsWith('image/')) return;
+    setFile(f);
+    setPreview(URL.createObjectURL(f));
+    setErr('');
+  };
 
   const handleAdd = async () => {
-    if (!url.trim()) { setErr('URL is required'); return; }
+    if (!file) { setErr('Please select an image file.'); return; }
     setSaving(true);
+    setProgress('Uploading image…');
     try {
-      await addProjectImage(projectId, url.trim(), caption.trim());
+      const publicUrl = await uploadProjectImage(file, 'gallery');
+      setProgress('Saving…');
+      await addProjectImage(projectId, publicUrl, caption.trim());
       onAdded();
       onClose();
     } catch (e) {
       setErr(e.message);
     } finally {
       setSaving(false);
+      setProgress('');
     }
   };
 
@@ -139,14 +165,35 @@ function AddImageModal({ projectId, onClose, onAdded }) {
           <button onClick={onClose} className="text-stone-400 hover:text-stone-600"><FontAwesomeIcon icon={faXmark} /></button>
         </div>
         <div className="space-y-4">
-          <div>
-            <label className="text-xs font-semibold text-stone-500 uppercase tracking-wide block mb-1.5">Image URL</label>
+          <div
+            onDrop={handleDrop}
+            onDragOver={e => e.preventDefault()}
+            onClick={() => inputRef.current?.click()}
+            className="relative cursor-pointer border-2 border-dashed border-stone-200 hover:border-vvva-orange/50 rounded-xl transition-colors overflow-hidden"
+            style={{ minHeight: '140px' }}
+          >
+            {preview ? (
+              <img src={preview} alt="preview" className="w-full h-40 object-cover" />
+            ) : (
+              <div className="flex flex-col items-center justify-center gap-2 py-10 text-stone-400">
+                <FontAwesomeIcon icon={faImage} className="text-3xl text-stone-300" />
+                <p className="text-sm font-medium text-stone-500">Click or drag & drop an image</p>
+                <p className="text-xs text-stone-400">JPG, PNG, WebP · max 10 MB</p>
+              </div>
+            )}
             <input
-              type="text" value={url} onChange={e => setUrl(e.target.value)}
-              placeholder="/gallery-1.webp or https://..."
-              className="w-full border border-stone-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-vvva-orange/25 focus:border-vvva-orange"
+              ref={inputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileChange}
             />
           </div>
+          {file && (
+            <p className="text-xs text-stone-400 truncate">
+              {file.name} ({(file.size / 1024).toFixed(0)} KB)
+            </p>
+          )}
           <div>
             <label className="text-xs font-semibold text-stone-500 uppercase tracking-wide block mb-1.5">Caption (optional)</label>
             <input
@@ -155,10 +202,11 @@ function AddImageModal({ projectId, onClose, onAdded }) {
               className="w-full border border-stone-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-vvva-orange/25 focus:border-vvva-orange"
             />
           </div>
-          {err && <p className="text-xs text-red-500">{err}</p>}
-          <button onClick={handleAdd} disabled={saving}
-            className="w-full bg-vvva-orange text-white font-semibold py-2.5 rounded-xl text-sm disabled:opacity-60">
-            {saving ? 'Adding…' : 'Add Image'}
+          {err && <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{err}</p>}
+          {progress && <p className="text-xs text-vvva-orange font-medium">{progress}</p>}
+          <button onClick={handleAdd} disabled={saving || !file}
+            className="w-full bg-vvva-orange text-white font-semibold py-2.5 rounded-xl text-sm disabled:opacity-60 transition-opacity">
+            {saving ? <><FontAwesomeIcon icon={faSpinner} className="animate-spin mr-2" />Uploading…</> : 'Upload & Add Image'}
           </button>
         </div>
       </div>
