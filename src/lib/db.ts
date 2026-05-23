@@ -69,12 +69,52 @@ const PROJECT_SELECT = `
   plot_slots ( id, project_id, bite_no, dimensions, sqft, direction, status, price_lakhs, details, created_at, updated_at )
 `;
 
+const CACHE_KEY = 'vvva_projects_cache';
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+// In-memory cache — survives component re-renders within the same page session
+let _memCache: { data: Project[]; ts: number } | null = null;
+
+// In-flight promise — deduplicates concurrent calls (e.g. StrictMode double-invoke)
+let _inflight: Promise<Project[]> | null = null;
+
+function readSessionCache(): Project[] | null {
+  try {
+    const raw = sessionStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { data: Project[]; ts: number };
+    if (Date.now() - parsed.ts > CACHE_TTL_MS) return null;
+    return parsed.data;
+  } catch {
+    return null;
+  }
+}
+
+function writeSessionCache(data: Project[]) {
+  try {
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
+  } catch {
+    // sessionStorage full or unavailable — not critical
+  }
+}
+
+export function getCachedProjects(): Project[] | null {
+  if (_memCache && Date.now() - _memCache.ts < CACHE_TTL_MS) return _memCache.data;
+  return readSessionCache();
+}
+
+export function invalidateProjectsCache() {
+  _memCache = null;
+  _inflight = null;
+  try { sessionStorage.removeItem(CACHE_KEY); } catch { /* ignore */ }
+}
+
 function isTransientError(msg: string) {
   const lower = msg.toLowerCase();
   return lower.includes('schema cache') || lower.includes('fetching') || lower.includes('network');
 }
 
-export async function fetchAllProjectsWithDetails(): Promise<Project[]> {
+async function _doFetch(): Promise<Project[]> {
   let { data, error } = await supabase.from('projects').select(PROJECT_SELECT).order('id');
 
   // Retry up to 3 times on transient errors (schema cache, network blips on cold start)
@@ -88,11 +128,40 @@ export async function fetchAllProjectsWithDetails(): Promise<Project[]> {
     throw new Error(error.message);
   }
 
-  return (data ?? []).map((p: any) => ({
+  const result = (data ?? []).map((p: any) => ({
     ...p,
     images: (p.images ?? []).sort((a: ProjectImage, b: ProjectImage) => a.display_order - b.display_order),
     plot_slots: (p.plot_slots ?? []).sort((a: PlotSlot, b: PlotSlot) => a.bite_no - b.bite_no),
   }));
+
+  _memCache = { data: result, ts: Date.now() };
+  writeSessionCache(result);
+  _inflight = null;
+  return result;
+}
+
+export async function fetchAllProjectsWithDetails(): Promise<Project[]> {
+  // Return memory cache instantly if fresh
+  if (_memCache && Date.now() - _memCache.ts < CACHE_TTL_MS) return _memCache.data;
+
+  // Deduplicate concurrent fetches — only one network call at a time
+  if (_inflight) return _inflight;
+
+  _inflight = _doFetch();
+  return _inflight;
+}
+
+// Kick off a background prefetch immediately when this module loads —
+// so by the time the user's browser renders ProjectsSection, the data
+// may already be in-flight or done.
+if (typeof window !== 'undefined') {
+  const cached = readSessionCache();
+  if (cached) {
+    _memCache = { data: cached, ts: Date.now() };
+  } else {
+    // Fire and forget — errors handled inside _doFetch
+    fetchAllProjectsWithDetails().catch(() => {});
+  }
 }
 
 export async function fetchProjectWithDetails(id: number): Promise<Project | null> {
@@ -211,6 +280,7 @@ export async function createProject(input: ProjectInput): Promise<Project> {
     .select()
     .single();
   if (error) throw new Error(error.message);
+  invalidateProjectsCache();
   return data;
 }
 
@@ -220,11 +290,13 @@ export async function updateProject(id: number, input: Partial<ProjectInput>): P
     .update({ ...input, updated_at: new Date().toISOString() })
     .eq('id', id);
   if (error) throw new Error(error.message);
+  invalidateProjectsCache();
 }
 
 export async function deleteProject(id: number): Promise<void> {
   const { error } = await supabase.from('projects').delete().eq('id', id);
   if (error) throw new Error(error.message);
+  invalidateProjectsCache();
 }
 
 export interface PlotSlotInput {
@@ -241,11 +313,13 @@ export interface PlotSlotInput {
 export async function addPlotSlot(input: PlotSlotInput): Promise<void> {
   const { error } = await supabase.from('plot_slots').insert(input);
   if (error) throw new Error(error.message);
+  invalidateProjectsCache();
 }
 
 export async function deletePlotSlot(slotId: number): Promise<void> {
   const { error } = await supabase.from('plot_slots').delete().eq('id', slotId);
   if (error) throw new Error(error.message);
+  invalidateProjectsCache();
 }
 
 export async function updatePlotSlot(slotId: number, input: Partial<Omit<PlotSlotInput, 'project_id'>>): Promise<void> {
@@ -254,6 +328,7 @@ export async function updatePlotSlot(slotId: number, input: Partial<Omit<PlotSlo
     .update({ ...input, updated_at: new Date().toISOString() })
     .eq('id', slotId);
   if (error) throw new Error(error.message);
+  invalidateProjectsCache();
 }
 
 export async function updateProjectGoogleMapsUrl(projectId: number, google_maps_url: string): Promise<void> {
@@ -262,6 +337,7 @@ export async function updateProjectGoogleMapsUrl(projectId: number, google_maps_
     .update({ google_maps_url, updated_at: new Date().toISOString() })
     .eq('id', projectId);
   if (error) throw new Error(error.message);
+  invalidateProjectsCache();
 }
 
 // ── Popup Video ────────────────────────────────────────────────────────────────

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Seo from '../seo/Seo';
 import { makeProjectListSchema, makeBreadcrumbSchema } from '../seo/schema';
-import { fetchAllProjectsWithDetails } from '../lib/db';
+import { fetchAllProjectsWithDetails, getCachedProjects } from '../lib/db';
 
 const breadcrumbs = makeBreadcrumbSchema([
   { name: 'Home', url: 'https://vvva-builders.vercel.app/' },
@@ -18,13 +18,14 @@ const STATUS_CLASS = {
 };
 
 export default function Projects() {
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const cached = getCachedProjects();
+  const [projects, setProjects] = useState(() => cached ?? []);
+  const [loading, setLoading] = useState(cached === null);
 
   useEffect(() => {
     fetchAllProjectsWithDetails()
       .then(setProjects)
-      .catch(() => setProjects([]))
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 

@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { fetchAllProjectsWithDetails } from '../lib/db';
-import { supabase } from '../lib/supabase';
+import { fetchAllProjectsWithDetails, getCachedProjects } from '../lib/db';
 import ProjectCardSkeleton from './ProjectCardSkeleton.jsx';
 import SearchBar from './SearchBar.jsx';
 import FilterTabs from './FilterTabs.jsx';
@@ -54,8 +53,11 @@ export default function ProjectsSection() {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [expandedId, setExpandedId] = useState(null);
   const [cols, setCols] = useState(getColumns);
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
+
+  // Pre-populate from cache so projects render immediately on first paint
+  const cached = getCachedProjects();
+  const [projects, setProjects] = useState(() => cached ? cached.map(mapDbProject) : []);
+  const [loading, setLoading] = useState(cached === null);
   const [error, setError] = useState(null);
 
   const statusParam = searchParams.get('status') || 'all';
@@ -79,18 +81,6 @@ export default function ProjectsSection() {
 
   useEffect(() => {
     loadProjects();
-  }, [loadProjects]);
-
-  // Real-time: re-fetch when admin updates a project (e.g. map_lat/map_lng)
-  useEffect(() => {
-    const channel = supabase
-      .channel('projects-realtime')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'projects' }, () => {
-        loadProjects();
-      })
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
   }, [loadProjects]);
 
   useEffect(() => {
