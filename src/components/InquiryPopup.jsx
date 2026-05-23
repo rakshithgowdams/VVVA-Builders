@@ -37,7 +37,6 @@ export default function InquiryPopup() {
   useEffect(() => {
     if (sessionStorage.getItem('inquiryPopupDismissed')) return;
 
-    // Fetch video config and start timer in parallel
     let cancelled = false;
 
     if (!videoFetched.current) {
@@ -57,6 +56,12 @@ export default function InquiryPopup() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!show) return;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, [show]);
+
   const dismiss = () => {
     setShow(false);
     sessionStorage.setItem('inquiryPopupDismissed', '1');
@@ -69,7 +74,7 @@ export default function InquiryPopup() {
 
   return (
     <div
-      className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-4 sm:p-6"
+      className="fixed inset-0 z-[200] flex items-center justify-center p-4"
       style={{ background: 'rgba(0,0,0,0.55)' }}
       onClick={(e) => { if (e.target === e.currentTarget) dismiss(); }}
     >
