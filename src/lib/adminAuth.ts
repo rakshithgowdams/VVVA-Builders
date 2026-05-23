@@ -1,11 +1,33 @@
 import { supabase } from './supabase';
 
 const EDGE_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-auth`;
+const SESSION_EXPIRY_KEY = 'vvva_admin_session_expiry';
+const SESSION_DURATION_MS = 2 * 60 * 60 * 1000; // 2 hours
 
 const headers = {
   'Content-Type': 'application/json',
   Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
 };
+
+export function setSessionExpiry() {
+  const expiry = Date.now() + SESSION_DURATION_MS;
+  localStorage.setItem(SESSION_EXPIRY_KEY, String(expiry));
+}
+
+export function getSessionExpiry(): number | null {
+  const val = localStorage.getItem(SESSION_EXPIRY_KEY);
+  return val ? Number(val) : null;
+}
+
+export function clearSessionExpiry() {
+  localStorage.removeItem(SESSION_EXPIRY_KEY);
+}
+
+export function isSessionExpired(): boolean {
+  const expiry = getSessionExpiry();
+  if (!expiry) return true;
+  return Date.now() >= expiry;
+}
 
 export async function sendOtp(email: string, mode: 'signin' | 'signup') {
   const res = await fetch(`${EDGE_BASE}/send-otp`, {
@@ -26,10 +48,16 @@ export async function verifyOtp(email: string, code: string, mode: 'signin' | 's
 }
 
 export async function signOut() {
+  clearSessionExpiry();
   await supabase.auth.signOut();
 }
 
 export async function getAdminSession() {
+  if (isSessionExpired()) {
+    clearSessionExpiry();
+    await supabase.auth.signOut();
+    return null;
+  }
   const { data } = await supabase.auth.getSession();
   return data.session;
 }

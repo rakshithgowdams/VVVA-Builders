@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -6,9 +6,9 @@ import {
   faRightFromBracket, faTableColumns, faLocationDot, faChartBar,
   faUsers, faMessage, faChevronDown, faTrash, faPlus, faXmark,
   faArrowUpRightFromSquare, faCheck, faVideo, faToggleOn, faToggleOff,
-  faUserCircle, faUser, faBars, faBuilding, faPencil, faEye,
+  faUserCircle, faUser, faBars, faBuilding, faPencil, faEye, faClock,
 } from '@fortawesome/free-solid-svg-icons';
-import { signOut, getAdminSession } from '../../lib/adminAuth';
+import { signOut, getAdminSession, getSessionExpiry } from '../../lib/adminAuth';
 import {
   fetchAllProjectsWithDetails, fetchEnquiries, updateEnquiryStatus,
   addProjectImage, deleteProjectImage, updatePlotStatus,
@@ -16,6 +16,65 @@ import {
 } from '../../lib/db';
 import AdminProfile from '../../components/AdminProfile.jsx';
 import ProjectsManager from '../../components/ProjectsManager.jsx';
+
+// ── Session timer ──────────────────────────────────────────────────────────────
+function useSessionTimer(onExpire) {
+  const [remaining, setRemaining] = useState(null);
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    const tick = () => {
+      const expiry = getSessionExpiry();
+      if (!expiry) { setRemaining(null); return; }
+      const diff = Math.max(0, expiry - Date.now());
+      setRemaining(diff);
+      if (diff === 0) onExpire();
+    };
+    tick();
+    timerRef.current = setInterval(tick, 1000);
+    return () => clearInterval(timerRef.current);
+  }, [onExpire]);
+
+  return remaining;
+}
+
+function SessionBadge({ remaining, compact }) {
+  if (remaining === null) return null;
+
+  const totalSec = Math.floor(remaining / 1000);
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  const timeStr = h > 0
+    ? `${h}h ${String(m).padStart(2, '0')}m`
+    : `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+
+  const urgent = totalSec < 300; // last 5 minutes
+  const warning = totalSec < 900; // last 15 minutes
+
+  const colorClass = urgent
+    ? 'bg-red-50 text-red-600 border-red-200'
+    : warning
+    ? 'bg-amber-50 text-amber-600 border-amber-200'
+    : 'bg-stone-50 text-stone-500 border-stone-200';
+
+  if (compact) {
+    return (
+      <div className={`flex items-center gap-1.5 text-xs font-mono font-medium px-2.5 py-1 rounded-lg border ${colorClass}`}>
+        <FontAwesomeIcon icon={faClock} className="text-[10px]" />
+        {timeStr}
+      </div>
+    );
+  }
+
+  return (
+    <div className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border ${colorClass}`}>
+      <FontAwesomeIcon icon={faClock} className="text-[10px]" />
+      <span className="hidden sm:inline">Session expires in</span>
+      <span className="font-mono font-bold">{timeStr}</span>
+    </div>
+  );
+}
 
 // ── Badge maps ─────────────────────────────────────────────────────────────────
 const STATUS_BADGE = {
@@ -515,6 +574,12 @@ export default function AdminDashboard() {
   const refresh = () => setRefreshKey(k => k + 1);
   const handleSignOut = async () => { await signOut(); navigate('/admin', { replace: true }); };
 
+  const handleExpire = useCallback(async () => {
+    await signOut();
+    navigate('/admin', { replace: true });
+  }, [navigate]);
+
+  const sessionRemaining = useSessionTimer(handleExpire);
   const newEnquiries = enquiries.filter(e => e.status === 'new').length;
 
   const navigate_to = (id) => {
@@ -593,8 +658,14 @@ export default function AdminDashboard() {
         </nav>
 
         {/* User + sign out */}
-        <div className="border-t border-stone-800 p-4">
-          <div className="flex items-center gap-3 mb-3">
+        <div className="border-t border-stone-800 p-4 space-y-3">
+          {/* Session timer */}
+          {sessionRemaining !== null && (
+            <div className="w-full">
+              <SessionBadge remaining={sessionRemaining} compact={false} />
+            </div>
+          )}
+          <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-stone-700 flex items-center justify-center shrink-0">
               <FontAwesomeIcon icon={faUser} className="text-stone-400 text-sm" />
             </div>
@@ -623,9 +694,13 @@ export default function AdminDashboard() {
             <FontAwesomeIcon icon={faBars} className="text-lg" />
           </button>
           <p className="font-semibold text-stone-800 text-sm">{activeLabel}</p>
-          <div className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center">
-            <FontAwesomeIcon icon={faUser} className="text-stone-400 text-xs" />
-          </div>
+          <SessionBadge remaining={sessionRemaining} compact={true} />
+        </header>
+
+        {/* Top bar (desktop) */}
+        <header className="hidden lg:flex bg-white border-b border-stone-100 px-6 h-13 items-center justify-between sticky top-0 z-30" style={{ height: '52px' }}>
+          <p className="font-semibold text-stone-700 text-sm">{activeLabel}</p>
+          <SessionBadge remaining={sessionRemaining} compact={false} />
         </header>
 
         {/* Page content */}

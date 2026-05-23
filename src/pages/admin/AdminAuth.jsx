@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faKey, faArrowRight, faRotate, faCircleCheck, faCircleExclamation, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-import { sendOtp, verifyOtp } from '../../lib/adminAuth';
+import { sendOtp, verifyOtp, setSessionExpiry } from '../../lib/adminAuth';
 import { supabase } from '../../lib/supabase';
 
 
@@ -84,6 +84,7 @@ export default function AdminAuth() {
       }
     }
 
+    setSessionExpiry();
     navigate('/admin/dashboard');
   };
 
