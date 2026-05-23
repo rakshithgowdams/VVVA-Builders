@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faInstagram, faFacebook, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 
 export default function Footer() {
   const quickLinks = [
@@ -52,35 +51,6 @@ export default function Footer() {
           {/* Social + Contact */}
           <div>
             <h3 className="font-playfair font-semibold text-base text-white mb-4">Connect With Us</h3>
-            <div className="flex items-center gap-4 mb-5">
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-vvva-orange hover:text-vvva-orange-light transition-colors"
-                aria-label="VVVA Developer on Instagram"
-              >
-                <FontAwesomeIcon icon={faInstagram} className="text-xl" />
-              </a>
-              <a
-                href="https://wa.me/919845659193"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-vvva-orange hover:text-vvva-orange-light transition-colors"
-                aria-label="VVVA Developer on WhatsApp"
-              >
-                <FontAwesomeIcon icon={faWhatsapp} className="text-xl" />
-              </a>
-              <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-vvva-orange hover:text-vvva-orange-light transition-colors"
-                aria-label="VVVA Developer on Facebook"
-              >
-                <FontAwesomeIcon icon={faFacebook} className="text-xl" />
-              </a>
-            </div>
             <div className="text-sm text-white/60 space-y-1.5">
               <p>+91 98456 59193 · +91 72044 01456 · +91 93536 40323</p>
               <p>info@vvvadeveloper.com</p>
