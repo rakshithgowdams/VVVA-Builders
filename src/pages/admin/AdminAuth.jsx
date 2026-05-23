@@ -119,11 +119,13 @@ export default function AdminAuth() {
           {/* Header */}
           <div className="bg-gradient-to-br from-stone-800 to-stone-700 px-8 py-8 text-center">
             <div className="flex justify-center mb-4">
-              <img
-                src="/WhatsApp_Image_2026-05-03_at_22.45.12_1.png"
-                alt="VVVA Developer"
-                className="h-14 w-auto object-contain brightness-0 invert"
-              />
+              <div className="bg-stone-900/60 rounded-xl px-4 py-2.5">
+                <img
+                  src="/vvva-logo.png"
+                  alt="VVVA Developer"
+                  className="h-12 w-auto object-contain"
+                />
+              </div>
             </div>
             <p className="text-white/60 text-sm mt-1">Secure admin portal</p>
           </div>

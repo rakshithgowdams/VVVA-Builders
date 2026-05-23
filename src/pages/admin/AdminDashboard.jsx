@@ -368,11 +368,13 @@ export default function AdminDashboard() {
       <header className="bg-white border-b border-stone-100 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img
-              src="/WhatsApp_Image_2026-05-03_at_22.45.12_1.png"
-              alt="VVVA Developer"
-              className="h-8 w-auto object-contain"
-            />
+            <div className="flex items-center justify-center bg-stone-900 rounded-lg px-2.5 py-1.5">
+              <img
+                src="/vvva-logo.png"
+                alt="VVVA Developer"
+                className="h-7 w-auto object-contain"
+              />
+            </div>
             <p className="text-stone-400 text-xs hidden sm:block">{session.user.email}</p>
           </div>
           <button
