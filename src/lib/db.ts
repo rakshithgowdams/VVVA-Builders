@@ -299,11 +299,17 @@ export async function uploadPopupVideo(file: File): Promise<string> {
   const ext = file.name.split('.').pop()?.toLowerCase() || 'mp4';
   const path = `popup-${Date.now()}.${ext}`;
 
+  const { data: sessionData } = await supabase.auth.getSession();
+  if (!sessionData.session) throw new Error('You must be signed in to upload videos. Please refresh and try again.');
+
   const { error } = await supabase.storage
     .from('popup-videos')
     .upload(path, file, { upsert: true, contentType: file.type });
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    console.error('[db] uploadPopupVideo error:', error);
+    throw new Error(error.message);
+  }
 
   const { data } = supabase.storage.from('popup-videos').getPublicUrl(path);
   return data.publicUrl;
@@ -375,14 +381,19 @@ export async function uploadAdminAvatar(userId: string, file: File): Promise<str
   const ext = file.name.split('.').pop();
   const path = `${userId}/avatar.${ext}`;
 
+  const { data: sessionData } = await supabase.auth.getSession();
+  if (!sessionData.session) throw new Error('You must be signed in to upload your avatar. Please refresh and try again.');
+
   const { error: uploadError } = await supabase.storage
     .from('admin-avatars')
     .upload(path, file, { upsert: true, contentType: file.type });
 
-  if (uploadError) throw new Error(uploadError.message);
+  if (uploadError) {
+    console.error('[db] uploadAdminAvatar error:', uploadError);
+    throw new Error(uploadError.message);
+  }
 
   const { data } = supabase.storage.from('admin-avatars').getPublicUrl(path);
-  // Bust cache with timestamp
   return `${data.publicUrl}?t=${Date.now()}`;
 }
 
@@ -429,11 +440,17 @@ export async function uploadProjectImage(file: File, folder: string = 'gallery')
   const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
   const filename = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
+  const { data: sessionData } = await supabase.auth.getSession();
+  if (!sessionData.session) throw new Error('You must be signed in to upload images. Please refresh and try again.');
+
   const { error } = await supabase.storage
     .from('project-images')
-    .upload(filename, file, { upsert: false, contentType: file.type });
+    .upload(filename, file, { upsert: true, contentType: file.type });
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    console.error('[db] uploadProjectImage error:', error);
+    throw new Error(error.message);
+  }
 
   const { data } = supabase.storage.from('project-images').getPublicUrl(filename);
   return data.publicUrl;
