@@ -277,13 +277,22 @@ function PopupVideoPanel() {
         <div className="bg-white rounded-xl border border-stone-100 shadow-sm p-6">
           <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-3">Preview</p>
           {embedUrl ? (
-            <div className="rounded-xl overflow-hidden border border-stone-100" style={{ aspectRatio: '16/9' }}>
-              <iframe src={embedUrl} title="Preview" className="w-full h-full" style={{ border: 0 }} allowFullScreen />
+            <div className="rounded-xl overflow-hidden border border-stone-100 relative w-full" style={{ paddingBottom: '56.25%', height: 0 }}>
+              <iframe
+                src={embedUrl}
+                title="Preview"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                className="absolute inset-0 w-full h-full"
+                style={{ border: 0 }}
+              />
             </div>
           ) : (
-            <div className="rounded-xl bg-stone-50 border border-stone-100 flex flex-col items-center justify-center gap-3 text-stone-300" style={{ aspectRatio: '16/9' }}>
-              <FontAwesomeIcon icon={faVideo} className="text-4xl" />
-              <span className="text-xs text-stone-400">Enter a valid YouTube URL to preview</span>
+            <div className="rounded-xl bg-stone-50 border border-stone-100 flex flex-col items-center justify-center gap-3 text-stone-300 relative w-full" style={{ paddingBottom: '56.25%', height: 0 }}>
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                <FontAwesomeIcon icon={faVideo} className="text-4xl" />
+                <span className="text-xs text-stone-400">Enter a valid YouTube URL to preview</span>
+              </div>
             </div>
           )}
           <div className="mt-3 flex items-center gap-2 text-xs text-stone-400">
