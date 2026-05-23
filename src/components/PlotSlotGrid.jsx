@@ -4,26 +4,26 @@ import SlotInfoPanel from './SlotInfoPanel.jsx';
 
 const SLOT_STYLES = {
   available: {
-    wrapper: 'border-[1.5px] border-green-500 bg-green-50 cursor-pointer hover:bg-green-100/60 hover:shadow-sm',
-    num: 'text-green-600',
-    dim: 'text-vvva-black',
+    wrapper: 'border-[1.5px] border-green-700 bg-green-50 cursor-pointer hover:bg-green-100 hover:shadow-sm',
+    num: 'text-green-800',
+    dim: 'text-green-900 font-bold',
   },
   booked: {
-    wrapper: 'border border-yellow-400 bg-yellow-50 cursor-not-allowed',
-    num: 'text-yellow-600',
-    dim: 'text-yellow-700',
+    wrapper: 'border border-yellow-600 bg-yellow-50 cursor-not-allowed',
+    num: 'text-yellow-800',
+    dim: 'text-yellow-900 font-bold',
   },
   sold: {
-    wrapper: 'border border-gray-300 bg-gray-50/80 cursor-not-allowed opacity-50',
-    num: 'text-gray-400',
-    dim: 'text-gray-400 line-through',
+    wrapper: 'border border-gray-400 bg-gray-200 cursor-not-allowed',
+    num: 'text-gray-500',
+    dim: 'text-gray-500 line-through',
   },
 };
 
 const STATUS_LABEL = {
   available: null,
-  booked: { text: 'Booked', cls: 'bg-yellow-100 text-yellow-700' },
-  sold: { text: 'Sold', cls: 'bg-gray-100 text-gray-500' },
+  booked: { text: 'Booked', cls: 'bg-yellow-200 text-yellow-900' },
+  sold: { text: 'Sold', cls: 'bg-gray-300 text-gray-600' },
 };
 
 function SlotCard({ slot, isSelected, onClick }) {
@@ -49,12 +49,12 @@ function SlotCard({ slot, isSelected, onClick }) {
         </span>
       )}
       {slot.status === 'available' && !isSelected && (
-        <span className="text-[9px] text-green-600/80 font-medium mt-1 block">
+        <span className="text-[9px] text-green-800 font-medium mt-1 block">
           Tap to view
         </span>
       )}
       {isSelected && (
-        <span className="text-[9px] text-green-600 font-semibold mt-1 block">
+        <span className="text-[9px] text-green-800 font-semibold mt-1 block">
           Selected
         </span>
       )}
@@ -107,15 +107,15 @@ export default function PlotSlotGrid({ slots = [], projectId, siteImage, project
       {/* Legend */}
       <div className="flex flex-wrap items-center gap-4 mb-5 text-xs text-gray-500">
         <span className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded-sm border-[1.5px] border-green-500 bg-green-50 inline-block" />
+          <span className="w-3 h-3 rounded-sm border-[1.5px] border-green-700 bg-green-50 inline-block" />
           Available
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded-sm border border-yellow-400 bg-yellow-50 inline-block" />
+          <span className="w-3 h-3 rounded-sm border border-yellow-600 bg-yellow-50 inline-block" />
           Booked
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded-sm border border-gray-300 bg-gray-50 opacity-50 inline-block" />
+          <span className="w-3 h-3 rounded-sm border border-gray-400 bg-gray-200 inline-block" />
           Sold
         </span>
       </div>
