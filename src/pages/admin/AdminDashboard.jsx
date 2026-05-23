@@ -598,40 +598,48 @@ export default function AdminDashboard() {
   const activeLabel = NAV_ITEMS.find(n => n.id === activeTab)?.label || '';
 
   return (
-    <div className="min-h-screen bg-stone-50 flex">
+    <div className="min-h-screen bg-stone-50 flex flex-row">
       {/* ── Mobile overlay ──────────────────────────────────────────────── */}
       <AnimatePresence>
         {sidebarOpen && (
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-stone-900/50 z-40 lg:hidden"
+            className="fixed inset-0 bg-stone-900/60 z-40 lg:hidden"
             onClick={() => setSidebarOpen(false)}
           />
         )}
       </AnimatePresence>
 
       {/* ── Sidebar ─────────────────────────────────────────────────────── */}
-      <aside className={`
-        fixed top-0 left-0 h-full z-50 w-64 bg-stone-900 flex flex-col transition-transform duration-300
-        lg:translate-x-0 lg:static lg:z-auto
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-      `}>
+      {/* On mobile: off-canvas drawer (fixed, full height, slides in)      */}
+      {/* On lg+: grid column, sticky, full viewport height                 */}
+      <aside
+        className={`
+          fixed top-0 left-0 h-full z-50 bg-stone-900 flex flex-col shrink-0
+          transition-transform duration-300 ease-in-out
+          lg:sticky lg:top-0 lg:self-start lg:z-auto lg:translate-x-0
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}
+        style={{ width: '260px', height: '100vh' }}
+      >
         {/* Logo */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-stone-800">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-stone-800 shrink-0">
           <div className="flex items-center gap-2.5">
-            <img src="/vvva-logo.png" alt="VVVA" className="h-8 w-auto object-contain" />
+            <div className="w-8 h-8 bg-vvva-orange rounded-lg flex items-center justify-center shrink-0">
+              <span className="text-white font-bold text-sm font-serif">V</span>
+            </div>
             <div>
-              <p className="text-white text-xs font-semibold leading-tight">VVVA</p>
-              <p className="text-stone-500 text-[10px]">Admin Panel</p>
+              <p className="text-white text-sm font-bold leading-tight tracking-wide">VVVA</p>
+              <p className="text-stone-500 text-[10px] tracking-widest uppercase">Admin Panel</p>
             </div>
           </div>
-          <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-stone-400 hover:text-white p-1">
+          <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-stone-400 hover:text-white p-1.5 rounded-lg hover:bg-stone-800 transition-colors">
             <FontAwesomeIcon icon={faXmark} />
           </button>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+        <nav className="flex-1 py-4 px-3 space-y-0.5 overflow-y-auto">
           {NAV_ITEMS.map(({ id, label, icon }) => {
             const isActive = activeTab === id;
             const badge = id === 'enquiries' && newEnquiries > 0 ? newEnquiries : null;
@@ -639,16 +647,16 @@ export default function AdminDashboard() {
               <button
                 key={id}
                 onClick={() => navigate_to(id)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group ${
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
                   isActive
                     ? 'bg-vvva-orange text-white shadow-sm'
                     : 'text-stone-400 hover:text-white hover:bg-stone-800'
                 }`}
               >
                 <FontAwesomeIcon icon={icon} className="text-sm w-4 shrink-0" />
-                <span className="flex-1 text-left">{label}</span>
+                <span className="flex-1 text-left truncate">{label}</span>
                 {badge && (
-                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${isActive ? 'bg-white/20 text-white' : 'bg-orange-500 text-white'}`}>
+                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${isActive ? 'bg-white/20 text-white' : 'bg-orange-500 text-white'}`}>
                     {badge}
                   </span>
                 )}
@@ -658,12 +666,9 @@ export default function AdminDashboard() {
         </nav>
 
         {/* User + sign out */}
-        <div className="border-t border-stone-800 p-4 space-y-3">
-          {/* Session timer */}
+        <div className="border-t border-stone-800 p-4 space-y-3 shrink-0">
           {sessionRemaining !== null && (
-            <div className="w-full">
-              <SessionBadge remaining={sessionRemaining} compact={false} />
-            </div>
+            <SessionBadge remaining={sessionRemaining} compact={false} />
           )}
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-stone-700 flex items-center justify-center shrink-0">
@@ -684,9 +689,9 @@ export default function AdminDashboard() {
       </aside>
 
       {/* ── Main area ───────────────────────────────────────────────────── */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen w-full">
         {/* Top bar (mobile) */}
-        <header className="bg-white border-b border-stone-100 px-4 sm:px-6 h-14 flex items-center justify-between lg:hidden sticky top-0 z-30">
+        <header className="bg-white border-b border-stone-100 px-4 h-14 flex items-center justify-between lg:hidden sticky top-0 z-30 shrink-0">
           <button
             onClick={() => setSidebarOpen(true)}
             className="text-stone-600 hover:text-stone-900 p-1.5 rounded-lg hover:bg-stone-100 transition-colors"
@@ -698,7 +703,7 @@ export default function AdminDashboard() {
         </header>
 
         {/* Top bar (desktop) */}
-        <header className="hidden lg:flex bg-white border-b border-stone-100 px-6 h-13 items-center justify-between sticky top-0 z-30" style={{ height: '52px' }}>
+        <header className="hidden lg:flex bg-white border-b border-stone-100 px-6 items-center justify-between sticky top-0 z-30 shrink-0" style={{ height: '52px' }}>
           <p className="font-semibold text-stone-700 text-sm">{activeLabel}</p>
           <SessionBadge remaining={sessionRemaining} compact={false} />
         </header>
