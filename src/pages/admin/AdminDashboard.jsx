@@ -634,13 +634,13 @@ export default function AdminDashboard() {
         {/* Logo */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-stone-800 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-vvva-orange rounded-lg flex items-center justify-center shrink-0">
-              <span className="text-white font-bold text-sm font-serif">V</span>
-            </div>
-            <div>
-              <p className="text-white text-sm font-bold leading-tight tracking-wide">VVVA</p>
-              <p className="text-stone-500 text-[10px] tracking-widest uppercase">Admin Panel</p>
-            </div>
+            <img
+              src="/vvva-logo copy copy.png"
+              alt="VVVA Developer"
+              className="h-9 w-auto object-contain"
+              style={{ mixBlendMode: 'screen' }}
+            />
+            <p className="text-stone-500 text-[10px] tracking-widest uppercase">Admin Panel</p>
           </div>
           <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-stone-400 hover:text-white p-1.5 rounded-lg hover:bg-stone-800 transition-colors">
             <FontAwesomeIcon icon={faXmark} />
