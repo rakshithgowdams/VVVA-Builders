@@ -11,6 +11,7 @@ import {
   addPlotSlot, deletePlotSlot, updatePlotSlot, addProjectImage, deleteProjectImage,
   updatePlotStatus, uploadProjectImage,
 } from '../lib/db';
+import ConfirmDialog from './ConfirmDialog';
 
 const STATUS_OPTS = ['open', 'future', 'closed'];
 const DIRECTION_OPTS = ['North', 'South', 'East', 'West', 'North-East', 'North-West', 'South-East', 'South-West'];
@@ -611,19 +612,34 @@ function ProjectDetail({ project, onRefresh, onEdit, onBack }) {
   const [addImage, setAddImage] = useState(false);
   const [deletingPlot, setDeletingPlot] = useState(null);
   const [editingPlot, setEditingPlot] = useState(null);
+  const [confirmDialog, setConfirmDialog] = useState(null);
 
-  const handleDeletePlot = async (id) => {
-    if (!confirm('Delete this plot slot? This cannot be undone.')) return;
-    setDeletingPlot(id);
-    try { await deletePlotSlot(id); onRefresh(); }
-    catch (e) { alert(e.message); }
-    finally { setDeletingPlot(null); }
+  const handleDeletePlot = (slot) => {
+    setConfirmDialog({
+      title: `Delete Plot #${slot.bite_no}?`,
+      message: `This will permanently remove Plot #${slot.bite_no} (${slot.dimensions} ft · ₹${slot.price_lakhs}L). This action cannot be undone.`,
+      confirmLabel: 'Delete Plot',
+      onConfirm: async () => {
+        setDeletingPlot(slot.id);
+        try { await deletePlotSlot(slot.id); onRefresh(); }
+        catch (e) { alert(e.message); }
+        finally { setDeletingPlot(null); }
+      },
+    });
   };
 
-  const handleDeleteImage = async (id) => {
-    if (!confirm('Delete this image?')) return;
-    try { await deleteProjectImage(id); onRefresh(); }
-    catch (e) { alert(e.message); }
+  const handleDeleteImage = (img) => {
+    setConfirmDialog({
+      title: 'Delete Gallery Image?',
+      message: img.caption
+        ? `Are you sure you want to delete the image "${img.caption}"? This cannot be undone.`
+        : 'Are you sure you want to delete this gallery image? This cannot be undone.',
+      confirmLabel: 'Delete Image',
+      onConfirm: async () => {
+        try { await deleteProjectImage(img.id); onRefresh(); }
+        catch (e) { alert(e.message); }
+      },
+    });
   };
 
   const handlePlotStatus = async (slotId, status) => {
@@ -703,7 +719,7 @@ function ProjectDetail({ project, onRefresh, onEdit, onBack }) {
                 <div key={img.id} className="relative group aspect-video rounded-lg overflow-hidden bg-stone-100">
                   <img src={img.url} alt={img.caption} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-stone-900/0 group-hover:bg-stone-900/50 transition-colors flex items-center justify-center">
-                    <button onClick={() => handleDeleteImage(img.id)}
+                    <button onClick={() => handleDeleteImage(img)}
                       className="opacity-0 group-hover:opacity-100 bg-red-500 text-white p-1.5 rounded-lg transition-opacity">
                       <FontAwesomeIcon icon={faTrash} className="text-xs" />
                     </button>
@@ -775,7 +791,7 @@ function ProjectDetail({ project, onRefresh, onEdit, onBack }) {
                           </select>
                           {/* Delete */}
                           <button
-                            onClick={() => handleDeletePlot(slot.id)}
+                            onClick={() => handleDeletePlot(slot)}
                             disabled={deletingPlot === slot.id}
                             title="Delete plot"
                             className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold text-red-500 border border-red-100 hover:bg-red-50 disabled:opacity-40 transition-colors"
@@ -797,25 +813,32 @@ function ProjectDetail({ project, onRefresh, onEdit, onBack }) {
       {addPlot && <AddPlotForm projectId={project.id} onAdded={onRefresh} onClose={() => setAddPlot(false)} />}
       {editingPlot && <EditPlotForm slot={editingPlot} onSaved={onRefresh} onClose={() => setEditingPlot(null)} />}
       {addImage && <AddImageModal projectId={project.id} onAdded={onRefresh} onClose={() => setAddImage(false)} />}
+      <ConfirmDialog config={confirmDialog} onClose={() => setConfirmDialog(null)} />
     </div>
   );
 }
 
 // ── Main Projects Manager ──────────────────────────────────────────────────────
 export default function ProjectsManager({ projects, onRefresh }) {
-  // view: 'list' | 'create' | 'edit' | 'detail'
   const [view, setView] = useState('list');
-  const [selected, setSelected] = useState(null); // project for edit/detail
+  const [selected, setSelected] = useState(null);
   const [deleting, setDeleting] = useState(null);
+  const [confirmDialog, setConfirmDialog] = useState(null);
 
   const handleSaved = () => { onRefresh(); setView('list'); setSelected(null); };
 
-  const handleDelete = async (project) => {
-    if (!confirm(`Delete "${project.name}"? All plot slots and images will be permanently removed.`)) return;
-    setDeleting(project.id);
-    try { await deleteProject(project.id); onRefresh(); }
-    catch (e) { alert(e.message); }
-    finally { setDeleting(null); }
+  const handleDelete = (project) => {
+    setConfirmDialog({
+      title: `Delete "${project.name}"?`,
+      message: `This will permanently delete the project along with all its plot slots and gallery images. This action cannot be undone.`,
+      confirmLabel: 'Delete Project',
+      onConfirm: async () => {
+        setDeleting(project.id);
+        try { await deleteProject(project.id); onRefresh(); }
+        catch (e) { alert(e.message); }
+        finally { setDeleting(null); }
+      },
+    });
   };
 
   if (view === 'create') {
@@ -926,6 +949,7 @@ export default function ProjectsManager({ projects, onRefresh }) {
           ))}
         </div>
       )}
+      <ConfirmDialog config={confirmDialog} onClose={() => setConfirmDialog(null)} />
     </div>
   );
 }

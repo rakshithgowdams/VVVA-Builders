@@ -9,12 +9,14 @@ import {
   fetchAdminProfile, upsertAdminProfile,
   uploadAdminAvatar, deleteAdminAvatar,
 } from '../lib/db';
+import ConfirmDialog from './ConfirmDialog';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
 function AvatarUploader({ userId, currentUrl, onChanged }) {
   const inputRef = useRef(null);
+  const [confirmDialog, setConfirmDialog] = useState(null);
   const [preview, setPreview] = useState(currentUrl || '');
   const [uploading, setUploading] = useState(false);
   const [removing, setRemoving] = useState(false);
@@ -62,20 +64,26 @@ function AvatarUploader({ userId, currentUrl, onChanged }) {
     if (file) handleFile(file);
   };
 
-  const handleRemove = async () => {
-    if (!confirm('Remove your profile photo?')) return;
-    uploadingRef.current = true;
-    setRemoving(true);
-    try {
-      await deleteAdminAvatar(userId);
-      setPreview('');
-      onChanged('');
-    } catch (e) {
-      setErr(e.message);
-    } finally {
-      setRemoving(false);
-      uploadingRef.current = false;
-    }
+  const handleRemove = () => {
+    setConfirmDialog({
+      title: 'Remove Profile Photo?',
+      message: 'Are you sure you want to remove your profile photo? This cannot be undone.',
+      confirmLabel: 'Remove Photo',
+      onConfirm: async () => {
+        uploadingRef.current = true;
+        setRemoving(true);
+        try {
+          await deleteAdminAvatar(userId);
+          setPreview('');
+          onChanged('');
+        } catch (e) {
+          setErr(e.message);
+        } finally {
+          setRemoving(false);
+          uploadingRef.current = false;
+        }
+      },
+    });
   };
 
   const initials = '';
@@ -163,6 +171,7 @@ function AvatarUploader({ userId, currentUrl, onChanged }) {
           {err}
         </div>
       )}
+      <ConfirmDialog config={confirmDialog} onClose={() => setConfirmDialog(null)} />
     </div>
   );
 }

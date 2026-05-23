@@ -18,6 +18,7 @@ import {
 } from '../../lib/db';
 import AdminProfile from '../../components/AdminProfile.jsx';
 import ProjectsManager from '../../components/ProjectsManager.jsx';
+import ConfirmDialog from '../../components/ConfirmDialog.jsx';
 
 // ── Session timer ──────────────────────────────────────────────────────────────
 function useSessionTimer(onExpire) {
@@ -507,11 +508,20 @@ function OverviewPanel({ projects, enquiries, onTabChange }) {
 function ProjectsPanel({ projects, onRefresh }) {
   const [expanded, setExpanded] = useState(null);
   const [addImageFor, setAddImageFor] = useState(null);
+  const [confirmDialog, setConfirmDialog] = useState(null);
 
-  const handleDeleteImage = async (imgId) => {
-    if (!confirm('Delete this image?')) return;
-    await deleteProjectImage(imgId);
-    onRefresh();
+  const handleDeleteImage = (img) => {
+    setConfirmDialog({
+      title: 'Delete Gallery Image?',
+      message: img.caption
+        ? `Are you sure you want to delete the image "${img.caption}"? This cannot be undone.`
+        : 'Are you sure you want to delete this gallery image? This cannot be undone.',
+      confirmLabel: 'Delete Image',
+      onConfirm: async () => {
+        await deleteProjectImage(img.id);
+        onRefresh();
+      },
+    });
   };
 
   const handlePlotStatus = async (slotId, status) => {
@@ -568,7 +578,7 @@ function ProjectsPanel({ projects, onRefresh }) {
                       <div key={img.id} className="relative group aspect-video rounded-lg overflow-hidden bg-stone-100">
                         <img src={img.url} alt={img.caption} className="w-full h-full object-cover" />
                         <div className="absolute inset-0 bg-stone-900/0 group-hover:bg-stone-900/50 transition-colors flex items-center justify-center">
-                          <button onClick={() => handleDeleteImage(img.id)}
+                          <button onClick={() => handleDeleteImage(img)}
                             className="opacity-0 group-hover:opacity-100 bg-red-500 text-white p-1.5 rounded-lg transition-opacity">
                             <FontAwesomeIcon icon={faTrash} className="text-xs" />
                           </button>
@@ -624,6 +634,7 @@ function ProjectsPanel({ projects, onRefresh }) {
       {addImageFor && (
         <AddImageModal projectId={addImageFor} onClose={() => setAddImageFor(null)} onAdded={onRefresh} />
       )}
+      <ConfirmDialog config={confirmDialog} onClose={() => setConfirmDialog(null)} />
     </div>
   );
 }
