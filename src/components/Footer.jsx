@@ -26,9 +26,9 @@ export default function Footer() {
           <div className="flex flex-col gap-4">
             <div>
               <img
-                src="/WhatsApp_Image_2026-05-03_at_22.45.12_1.png"
+                src="/files_2806306-2026-05-23T05-46-35-685Z-WhatsApp_Image_2026-05-03_at_22.45.12.jpeg"
                 alt="VVVA Developer"
-                className="h-12 w-auto object-contain brightness-0 invert"
+                className="h-20 w-auto object-contain"
               />
             </div>
             <p className="text-sm text-white/60 leading-relaxed max-w-xs">
