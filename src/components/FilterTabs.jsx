@@ -1,8 +1,8 @@
 const TABS = [
   { label: 'All', value: 'all' },
-  { label: 'Open', value: 'open' },
-  { label: 'Future', value: 'future' },
-  { label: 'Closed', value: 'closed' },
+  { label: 'Available', value: 'open' },
+  { label: 'Upcoming', value: 'future' },
+  { label: 'Completed', value: 'closed' },
 ];
 
 export default function FilterTabs({ active, onChange }) {
