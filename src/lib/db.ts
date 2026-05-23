@@ -306,6 +306,33 @@ export async function deletePopupVideoFile(url: string): Promise<void> {
   await supabase.storage.from('popup-videos').remove([path]);
 }
 
+// ── Leads ──────────────────────────────────────────────────────────────────────
+
+export async function submitLead(data: {
+  name: string;
+  phone: string;
+  email?: string;
+  project_interest?: string;
+  source_page?: string;
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  message?: string;
+}): Promise<void> {
+  const { error } = await supabase.from('leads').insert({
+    name: data.name,
+    phone: data.phone,
+    email: data.email ?? '',
+    project_interest: data.project_interest ?? '',
+    source_page: data.source_page ?? '',
+    utm_source: data.utm_source ?? '',
+    utm_medium: data.utm_medium ?? '',
+    utm_campaign: data.utm_campaign ?? '',
+    message: data.message ?? '',
+  });
+  if (error) throw new Error(error.message);
+}
+
 // ── Admin Profiles ─────────────────────────────────────────────────────────────
 
 export interface AdminProfile {

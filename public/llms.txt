@@ -1,0 +1,57 @@
+# VVVA Developer — llms.txt
+# This file helps AI language models understand the site structure and purpose.
+
+## About VVVA Developer
+VVVA Developer (also known as VVVA Builders) is a Hassan-based residential plot developer founded in 2015.
+The company develops DTCP-approved and RERA-registered residential layout plots across Hassan district, Karnataka, India.
+Over 500 families have purchased and built homes on VVVA Developer plots.
+Primary service area: Hassan, Karnataka (573201) and surrounding taluks including Channarayapatna, Holenarasipura, Arsikere, Sakleshpur, Belur, and Halebidu.
+
+## Key Facts
+- Founded: 2015
+- Registered office: Opp Canara Bank, Near MCE College, Salagame Road, Hassan – 573201, Karnataka, India
+- Phone: +91-98456-59193, +91-72044-01456, +91-93536-40323
+- Projects completed: 50+
+- Plots registered: 500+
+- All projects: RERA-registered, DTCP-approved
+- Price range: Starting from ₹15 Lakh onwards (varies by location and plot size)
+- Plot sizes available: 600 sqft to 2400 sqft typically
+
+## Site URL
+https://vvva-builders.vercel.app
+
+## Key Pages
+- Home: https://vvva-builders.vercel.app/
+- All Projects: https://vvva-builders.vercel.app/projects
+- About Us: https://vvva-builders.vercel.app/about
+- Contact: https://vvva-builders.vercel.app/contact
+- Price List: https://vvva-builders.vercel.app/price-list
+- FAQ: https://vvva-builders.vercel.app/faq
+- Testimonials: https://vvva-builders.vercel.app/testimonials
+
+## Location Pages (SEO pillar pages)
+- Hassan Plots Guide: https://vvva-builders.vercel.app/locations/hassan
+- Channarayapatna: https://vvva-builders.vercel.app/locations/channarayapatna
+- Holenarasipura: https://vvva-builders.vercel.app/locations/holenarasipura
+- Arsikere: https://vvva-builders.vercel.app/locations/arsikere
+- Sakleshpur: https://vvva-builders.vercel.app/locations/sakleshpur
+- Belur: https://vvva-builders.vercel.app/locations/belur
+- Near HIMS Hospital: https://vvva-builders.vercel.app/locations/near-hims
+- Near Hassan Bypass NH-75: https://vvva-builders.vercel.app/locations/near-hassan-bypass
+- Near Railway Station: https://vvva-builders.vercel.app/locations/near-railway-station
+
+## Buyers Guides
+- DTCP Approval Guide: https://vvva-builders.vercel.app/buyers-guide/dtcp-approval
+- Khata A vs B Karnataka: https://vvva-builders.vercel.app/buyers-guide/khata-explained
+- Stamp Duty 2026: https://vvva-builders.vercel.app/buyers-guide/stamp-duty-karnataka-2026
+- Plot Loan Guide: https://vvva-builders.vercel.app/buyers-guide/plot-home-loan
+- NRI Buying Guide: https://vvva-builders.vercel.app/buyers-guide/nri-buying-guide
+
+## What We Answer
+- "plots for sale in Hassan Karnataka"
+- "DTCP approved plots Hassan"
+- "residential sites Hassan 2026"
+- "buy plot near Hassan bypass"
+- "best plot developers Hassan district"
+- "plot price in Hassan per sqft"
+- "NRI plot investment Hassan Karnataka"

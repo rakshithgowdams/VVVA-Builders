@@ -10,6 +10,8 @@ import PlotSlotGrid from '../components/PlotSlotGrid.jsx';
 import PropertyMap from '../components/PropertyMap.jsx';
 import EnquiryForm from '../components/EnquiryForm.jsx';
 import FloatingEnquireBtn from '../components/FloatingEnquireBtn.jsx';
+import Seo from '../seo/Seo';
+import { makeProjectSchema, makeBreadcrumbSchema } from '../seo/schema';
 
 const STATUS_CONFIG = {
   open:   { label: 'OPEN',   bg: 'bg-green-500',  text: 'text-white' },
@@ -46,17 +48,27 @@ function mapDbProject(p) {
   };
 }
 
+async function fetchBySlugOrId(slugOrId) {
+  const numericId = Number(slugOrId);
+  if (!isNaN(numericId)) return fetchProjectWithDetails(numericId);
+  const { data } = await supabase.from('projects').select('id').eq('slug', slugOrId).maybeSingle();
+  if (!data) return null;
+  return fetchProjectWithDetails(data.id);
+}
+
 export default function ProjectDetail() {
   const { id } = useParams();
   const heroRef = useRef(null);
   const [project, setProject] = useState(null);
+  const [rawProject, setRawProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
   const loadProject = useCallback(() => {
-    fetchProjectWithDetails(Number(id))
+    fetchBySlugOrId(id)
       .then(data => {
         if (!data) { setNotFound(true); return; }
+        setRawProject(data);
         setProject(mapDbProject(data));
       })
       .catch(() => setNotFound(true))
@@ -104,7 +116,24 @@ export default function ProjectDetail() {
 
   const statusCfg = STATUS_CONFIG[project.status] || STATUS_CONFIG.closed;
 
+  const projectSchema = rawProject ? makeProjectSchema(rawProject) : null;
+  const breadcrumbs = makeBreadcrumbSchema([
+    { name: 'Home', url: 'https://vvva-builders.vercel.app/' },
+    { name: 'Projects', url: 'https://vvva-builders.vercel.app/projects' },
+    { name: project.name, url: `https://vvva-builders.vercel.app/projects/${rawProject?.slug || id}` },
+  ]);
+
   return (
+    <>
+    {projectSchema && (
+      <Seo
+        title={rawProject?.seo_title || `${project.name} — DTCP Approved Plots in ${project.location} | VVVA Developer`}
+        description={rawProject?.seo_description || `${project.description?.slice(0, 150) || project.name} — DTCP-approved residential plots. RERA: ${project.reraNumber || 'Applied'}. Call +91-98456-59193.`}
+        canonical={`/projects/${rawProject?.slug || id}`}
+        image={project.cardImage}
+        schema={[projectSchema, breadcrumbs]}
+      />
+    )}
     <main className="pt-16 bg-vvva-warm-white page-transition">
       {/* Hero */}
       <section ref={heroRef} className="relative py-14 px-4 overflow-hidden">
@@ -226,5 +255,6 @@ export default function ProjectDetail() {
 
       <FloatingEnquireBtn heroRef={heroRef} />
     </main>
+    </>
   );
 }

@@ -5,6 +5,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPhone, faLocationDot, faClock, faCircleCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { submitEnquiry } from '../lib/db';
+import Seo from '../seo/Seo';
+import { LOCAL_BUSINESS_SCHEMA, makeBreadcrumbSchema } from '../seo/schema';
+
+const breadcrumbs = makeBreadcrumbSchema([
+  { name: 'Home', url: 'https://vvva-builders.vercel.app/' },
+  { name: 'Contact', url: 'https://vvva-builders.vercel.app/contact' },
+]);
 
 function WhatsAppFab() {
   return (
@@ -74,6 +81,13 @@ export default function Contact() {
   };
 
   return (
+    <>
+    <Seo
+      title="Contact VVVA Developer — Plot Enquiry Hassan Karnataka"
+      description="Contact VVVA Developer for residential plot enquiries in Hassan, Karnataka. Call +91-98456-59193 or visit our office on Salagame Road, Hassan – 573201."
+      canonical="/contact"
+      schema={[LOCAL_BUSINESS_SCHEMA, breadcrumbs]}
+    />
     <main className="pt-16 page-transition">
       {/* Page hero */}
       <section className="py-16 px-4 text-center relative overflow-hidden">
@@ -241,5 +255,6 @@ export default function Contact() {
         )}
       </AnimatePresence>
     </main>
+    </>
   );
 }

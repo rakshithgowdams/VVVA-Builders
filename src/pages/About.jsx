@@ -4,6 +4,13 @@ import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrophy, faEye, faHeart, faUsers, faLocationDot, faArrowTrendUp, faCircleCheck, faQuoteLeft, faBriefcase, faStar } from '@fortawesome/free-solid-svg-icons';
 import StatCard from '../components/StatCard.jsx';
+import Seo from '../seo/Seo';
+import { LOCAL_BUSINESS_SCHEMA, makeBreadcrumbSchema } from '../seo/schema';
+
+const breadcrumbs = makeBreadcrumbSchema([
+  { name: 'Home', url: 'https://vvva-builders.vercel.app/' },
+  { name: 'About Us', url: 'https://vvva-builders.vercel.app/about' },
+]);
 
 const VALUES = [
   {
@@ -100,6 +107,13 @@ export default function About() {
   const [activeQuote, setActiveQuote] = useState(0);
 
   return (
+    <>
+    <Seo
+      title="About VVVA Developer — Hassan's Trusted Plot Developer Since 2015"
+      description="VVVA Developer was founded in 2015 in Hassan, Karnataka. 50+ completed residential layout projects, 500+ happy families, RERA-registered. Learn our story."
+      canonical="/about"
+      schema={[LOCAL_BUSINESS_SCHEMA, breadcrumbs]}
+    />
     <main className="pt-16 page-transition">
       {/* Hero */}
       <section className="py-20 px-4 text-center relative overflow-hidden">
@@ -379,5 +393,6 @@ export default function About() {
         </div>
       </section>
     </main>
+    </>
   );
 }

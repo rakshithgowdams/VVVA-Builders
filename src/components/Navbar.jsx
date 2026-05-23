@@ -1,11 +1,69 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faXmark, faPhone, faChevronDown } from '@fortawesome/free-solid-svg-icons';
+import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
+
+const NAV_LINKS = [
+  { label: 'Home', to: '/' },
+  { label: 'Projects', to: '/projects' },
+  {
+    label: 'Locations',
+    dropdown: [
+      { label: 'Hassan', to: '/locations/hassan' },
+      { label: 'Channarayapatna', to: '/locations/channarayapatna' },
+      { label: 'Holenarasipura', to: '/locations/holenarasipura' },
+      { label: 'Near HIMS', to: '/locations/near-hims' },
+      { label: 'Near Bypass', to: '/locations/near-hassan-bypass' },
+      { label: 'Belur', to: '/locations/belur' },
+      { label: 'Sakleshpur', to: '/locations/sakleshpur' },
+    ],
+  },
+  {
+    label: 'Guides',
+    dropdown: [
+      { label: "Buyer's Guide", to: '/buyers-guide' },
+      { label: 'DTCP Approval', to: '/buyers-guide/dtcp-approval' },
+      { label: 'Stamp Duty 2026', to: '/buyers-guide/stamp-duty-karnataka-2026' },
+      { label: 'NRI Guide', to: '/buyers-guide/nri-buying-guide' },
+      { label: 'Price List', to: '/price-list' },
+    ],
+  },
+  { label: 'About', to: '/about' },
+];
+
+const MOBILE_LINKS = [
+  { label: 'Home', to: '/' },
+  { label: 'Projects', to: '/projects' },
+  { label: 'Price List', to: '/price-list' },
+  { label: 'Hassan Plots', to: '/locations/hassan' },
+  { label: 'About Us', to: '/about' },
+  { label: 'Contact Us', to: '/contact' },
+  { label: 'FAQ', to: '/faq' },
+  { label: "Buyer's Guide", to: '/buyers-guide' },
+];
+
+function DropdownMenu({ items, isOpen }) {
+  if (!isOpen) return null;
+  return (
+    <div className="absolute top-full left-0 mt-1 bg-white border border-vvva-sand rounded-card shadow-xl min-w-[200px] py-1 z-50">
+      {items.map(({ label, to }) => (
+        <Link
+          key={to}
+          to={to}
+          className="block px-4 py-2.5 text-sm text-vvva-black hover:text-vvva-orange hover:bg-amber-50/50 transition-colors"
+        >
+          {label}
+        </Link>
+      ))}
+    </div>
+  );
+}
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -17,62 +75,88 @@ export default function Navbar() {
 
   useEffect(() => {
     setMenuOpen(false);
+    setOpenDropdown(null);
   }, [location]);
 
-  const navLinks = [
-    { label: 'Home', to: '/' },
-    { label: 'About Us', to: '/about' },
-    { label: 'Contact Us', to: '/contact' },
-  ];
-
   const isActive = (to) => {
+    if (!to) return false;
     if (to === '/') return location.pathname === '/';
     return location.pathname.startsWith(to);
   };
 
-  const handleEnquire = () => {
-    navigate('/contact');
-  };
-
   return (
-    <nav
-      className={`fixed top-0 left-0 right-0 z-50 bg-white transition-all duration-200 ${
-        scrolled ? 'shadow-md border-b border-vvva-sand' : 'border-b border-vvva-sand/50'
-      }`}
-    >
+    <nav className={`fixed top-0 left-0 right-0 z-50 bg-white transition-all duration-200 ${scrolled ? 'shadow-md border-b border-vvva-sand' : 'border-b border-vvva-sand/50'}`}>
+      {/* Top utility bar */}
+      <div className="hidden md:block bg-stone-800 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1.5 flex items-center justify-between">
+          <p className="text-xs text-white/50">Trusted residential plot developer in Hassan since 2015</p>
+          <div className="flex items-center gap-4">
+            <a href="tel:+919845659193" className="flex items-center gap-1.5 text-xs text-white/70 hover:text-vvva-orange transition-colors">
+              <FontAwesomeIcon icon={faPhone} className="text-[10px]" />
+              +91 98456 59193
+            </a>
+            <a href="https://wa.me/919845659193?text=Hi%2C%20I%27m%20interested%20in%20VVVA%20Developer%20plots."
+              target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-xs text-white/70 hover:text-green-400 transition-colors">
+              <FontAwesomeIcon icon={faWhatsapp} />
+              WhatsApp
+            </a>
+          </div>
+        </div>
+      </div>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center shrink-0">
-            <img
-              src="/vvva-logo.png"
-              alt="VVVA Developer"
-              className="h-14 w-auto object-contain"
-            />
+            <img src="/vvva-logo.png" alt="VVVA Developer — Plots in Hassan"
+              className="h-12 w-auto object-contain" />
           </Link>
 
-          {/* Desktop nav links */}
-          <div className="hidden md:flex items-center gap-8">
-            {navLinks.map(({ label, to }) => (
-              <Link
-                key={to}
-                to={to}
-                className={`text-sm font-medium transition-colors duration-150 ${
-                  isActive(to)
-                    ? 'text-vvva-orange border-b-2 border-vvva-orange pb-0.5'
-                    : 'text-vvva-black hover:text-vvva-orange'
-                }`}
-              >
-                {label}
-              </Link>
+          {/* Desktop nav */}
+          <div className="hidden md:flex items-center gap-6">
+            {NAV_LINKS.map((link) => (
+              link.dropdown ? (
+                <div
+                  key={link.label}
+                  className="relative"
+                  onMouseEnter={() => setOpenDropdown(link.label)}
+                  onMouseLeave={() => setOpenDropdown(null)}
+                >
+                  <button className={`flex items-center gap-1 text-sm font-medium transition-colors duration-150 ${
+                    openDropdown === link.label ? 'text-vvva-orange' : 'text-vvva-black hover:text-vvva-orange'
+                  }`}>
+                    {link.label}
+                    <FontAwesomeIcon icon={faChevronDown} className="text-[10px]" />
+                  </button>
+                  <DropdownMenu items={link.dropdown} isOpen={openDropdown === link.label} />
+                </div>
+              ) : (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className={`text-sm font-medium transition-colors duration-150 ${
+                    isActive(link.to)
+                      ? 'text-vvva-orange border-b-2 border-vvva-orange pb-0.5'
+                      : 'text-vvva-black hover:text-vvva-orange'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              )
             ))}
           </div>
 
-          {/* Desktop CTA */}
-          <div className="hidden md:block">
+          {/* Desktop CTAs */}
+          <div className="hidden md:flex items-center gap-3">
+            <a href="tel:+919845659193"
+              className="flex items-center gap-1.5 text-sm font-semibold text-vvva-orange hover:text-vvva-orange-dark transition-colors">
+              <FontAwesomeIcon icon={faPhone} className="text-xs" />
+              Talk to Expert
+            </a>
             <button
-              onClick={handleEnquire}
-              className="bg-vvva-orange hover:bg-vvva-orange-dark text-white text-sm font-semibold px-5 py-2 rounded-btn transition-colors duration-150"
+              onClick={() => navigate('/contact')}
+              className="bg-vvva-orange hover:bg-vvva-orange-dark text-white text-sm font-semibold px-4 py-2 rounded-btn transition-colors duration-150"
             >
               Enquire Now
             </button>
@@ -91,9 +175,8 @@ export default function Navbar() {
 
       {/* Mobile drawer */}
       <div
-        className={`md:hidden fixed inset-y-0 right-0 w-72 bg-white shadow-2xl z-50 transform transition-transform duration-300 ${
-          menuOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
+        className={`md:hidden fixed inset-y-0 right-0 bg-white shadow-2xl z-50 transform transition-transform duration-300 ${menuOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        style={{ width: 'min(280px, 100vw)', height: '100vh', overflowY: 'auto' }}
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-vvva-sand">
           <span className="font-playfair font-bold text-lg text-vvva-black">Menu</span>
@@ -101,33 +184,45 @@ export default function Navbar() {
             <FontAwesomeIcon icon={faXmark} className="text-vvva-black text-xl" />
           </button>
         </div>
-        <div className="flex flex-col px-5 py-6 gap-5">
-          {navLinks.map(({ label, to }) => (
+
+        {/* Mobile phone */}
+        <div className="px-5 py-3 bg-stone-50 border-b border-vvva-sand">
+          <a href="tel:+919845659193" className="flex items-center gap-2 text-sm font-semibold text-vvva-orange">
+            <FontAwesomeIcon icon={faPhone} />
+            +91 98456 59193
+          </a>
+        </div>
+
+        <div className="flex flex-col px-5 py-5 gap-4">
+          {MOBILE_LINKS.map(({ label, to }) => (
             <Link
               key={to}
               to={to}
-              className={`text-base font-medium transition-colors ${
-                isActive(to) ? 'text-vvva-orange' : 'text-vvva-black hover:text-vvva-orange'
-              }`}
+              className={`text-base font-medium transition-colors ${isActive(to) ? 'text-vvva-orange' : 'text-vvva-black hover:text-vvva-orange'}`}
             >
               {label}
             </Link>
           ))}
-          <button
-            onClick={() => { handleEnquire(); setMenuOpen(false); }}
-            className="mt-2 bg-vvva-orange hover:bg-vvva-orange-dark text-white font-semibold px-5 py-2.5 rounded-btn transition-colors"
-          >
-            Enquire Now
-          </button>
+          <div className="pt-3 border-t border-vvva-sand flex flex-col gap-3">
+            <button
+              onClick={() => { navigate('/contact'); setMenuOpen(false); }}
+              className="bg-vvva-orange hover:bg-vvva-orange-dark text-white font-semibold px-5 py-2.5 rounded-btn transition-colors text-center"
+            >
+              Enquire Now
+            </button>
+            <a href="https://wa.me/919845659193?text=Hi%2C%20I%27m%20interested%20in%20VVVA%20Developer%20plots."
+              target="_blank" rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 bg-green-600 text-white font-semibold px-5 py-2.5 rounded-btn transition-colors">
+              <FontAwesomeIcon icon={faWhatsapp} />
+              WhatsApp Us
+            </a>
+          </div>
         </div>
       </div>
 
       {/* Mobile overlay */}
       {menuOpen && (
-        <div
-          className="md:hidden fixed inset-0 bg-stone-800/40 z-40"
-          onClick={() => setMenuOpen(false)}
-        />
+        <div className="md:hidden fixed inset-0 bg-stone-800/40 z-40" onClick={() => setMenuOpen(false)} />
       )}
     </nav>
   );
