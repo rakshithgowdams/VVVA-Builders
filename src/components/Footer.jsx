@@ -26,9 +26,6 @@ export default function Footer() {
             <p className="text-sm text-white/60 leading-relaxed max-w-xs">
               Premium residential plots in Bengaluru. Building dreams, creating communities.
             </p>
-            <p className="text-xs text-white/40 mt-2">
-              &copy; 2025 VVVA Developer. All rights reserved.
-            </p>
           </div>
 
           {/* Quick Links */}
@@ -53,16 +50,26 @@ export default function Footer() {
             <h3 className="font-playfair font-semibold text-base text-white mb-4">Connect With Us</h3>
             <div className="text-sm text-white/60 space-y-1.5">
               <p>+91 98456 59193 · +91 72044 01456 · +91 93536 40323</p>
-              <p>info@vvvadeveloper.com</p>
               <p>Opp Canara Bank, Near MCE College,<br />Salagame Road, Hassan – 573201</p>
             </div>
           </div>
         </div>
       </div>
       <div className="border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <p className="text-xs text-white/30 text-center">
-            VVVA Developer — Trusted residential plot developer in Bengaluru since 2015.
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <p className="text-xs text-white/30 text-center sm:text-left">
+            &copy; 2025 VVVA Developer. All rights reserved.
+          </p>
+          <p className="text-xs text-white/30 text-center sm:text-right">
+            Designed &amp; Developed by{' '}
+            <a
+              href="https://www.mydesignnexus.in"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white/50 hover:text-vvva-orange transition-colors duration-150"
+            >
+              www.mydesignnexus.in
+            </a>
           </p>
         </div>
       </div>
