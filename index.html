@@ -51,6 +51,9 @@
     <meta name="twitter:description" content="DTCP & RERA approved residential plots in Hassan. 10+ years, 500+ families, 50+ projects. Call +91-98456-59193." />
     <meta name="twitter:image" content="https://vvva-builders.vercel.app/hero-real-estate-bg.webp" />
 
+    <!-- Preload hero image — browser fetches it before JS executes, eliminates blank hero -->
+    <link rel="preload" as="image" href="/hero-real-estate-bg.webp" fetchpriority="high" />
+
     <!-- DNS prefetch & preconnect for external resources -->
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -60,8 +63,9 @@
     <!-- Fonts with display=swap (non-blocking) -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" />
 
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Leaflet CSS: load non-blocking, only needed on project detail/map pages -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" /></noscript>
   </head>
   <body>
     <div id="root"></div>

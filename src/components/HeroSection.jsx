@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
-import { fetchSiteImageByKey } from '../lib/db';
+import { fetchSiteImageByKey, imgUrl } from '../lib/db';
+
+const LOCAL_HERO = '/hero-real-estate-bg.webp';
 
 function CountUp({ target, suffix = '', duration = 1800 }) {
   const [display, setDisplay] = useState(0);
@@ -25,21 +27,19 @@ function CountUp({ target, suffix = '', duration = 1800 }) {
     return () => clearInterval(timer);
   }, [inView, target, duration]);
 
-  return (
-    <span ref={ref}>
-      {display}{suffix}
-    </span>
-  );
+  return <span ref={ref}>{display}{suffix}</span>;
 }
 
 export default function HeroSection() {
   const heroRef = useRef(null);
-  const [heroImg, setHeroImg] = useState({ url: '', alt: '' });
+  const [heroImg, setHeroImg] = useState({ url: LOCAL_HERO, alt: 'VVVA Developer — Premium Residential Plots' });
   const [imgLoaded, setImgLoaded] = useState(false);
 
   useEffect(() => {
     fetchSiteImageByKey('hero_background')
-      .then(img => { if (img) setHeroImg({ url: img.url, alt: img.alt }); })
+      .then(img => {
+        if (img?.url) setHeroImg({ url: imgUrl(img.url, 1920, 80), alt: img.alt || '' });
+      })
       .catch(() => {});
   }, []);
 
@@ -53,28 +53,20 @@ export default function HeroSection() {
       ref={heroRef}
       className="relative w-full min-h-screen flex items-center justify-center overflow-hidden"
     >
-      {/* Hero background image with blur-up reveal */}
-      {heroImg.url && (
-        <img
-          src={heroImg.url}
-          alt={heroImg.alt || ''}
-          aria-hidden="true"
-          fetchpriority="high"
-          decoding="async"
-          onLoad={() => setImgLoaded(true)}
-          className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-700 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
-        />
-      )}
-      {/* Placeholder while image loads */}
-      {!imgLoaded && (
-        <div className="absolute inset-0 bg-stone-900" />
-      )}
+      <img
+        src={heroImg.url}
+        alt={heroImg.alt}
+        aria-hidden="true"
+        fetchpriority="high"
+        decoding="async"
+        onLoad={() => setImgLoaded(true)}
+        className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-500 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
+      />
+      <div className={`absolute inset-0 bg-stone-900 transition-opacity duration-500 ${imgLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'}`} />
 
-      {/* Dark gradient overlay for readability */}
       <div className="absolute inset-0 bg-gradient-to-r from-stone-950/85 via-stone-950/60 to-stone-950/40" />
       <div className="absolute inset-0 bg-gradient-to-t from-stone-950/60 via-transparent to-transparent" />
 
-      {/* Content */}
       <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
@@ -119,7 +111,6 @@ export default function HeroSection() {
           </a>
         </motion.div>
 
-        {/* Stats row */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -141,7 +132,6 @@ export default function HeroSection() {
         </motion.div>
       </div>
 
-      {/* Scroll indicator */}
       <motion.button
         onClick={scrollToProjects}
         initial={{ opacity: 0 }}

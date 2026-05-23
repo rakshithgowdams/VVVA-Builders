@@ -404,6 +404,15 @@ export async function deleteAdminAvatar(userId: string): Promise<void> {
   }
 }
 
+// ── Image URL helpers ──────────────────────────────────────────────────────────
+
+export function imgUrl(url: string | null | undefined, width: number, quality = 75): string {
+  if (!url) return '';
+  if (!url.includes('/storage/v1/object/public/')) return url;
+  const sep = url.includes('?') ? '&' : '?';
+  return `${url}${sep}width=${width}&quality=${quality}&resize=cover`;
+}
+
 // ── Site Images ────────────────────────────────────────────────────────────────
 
 export interface SiteImage {
