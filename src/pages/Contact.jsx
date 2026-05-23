@@ -3,8 +3,8 @@ import { useForm } from 'react-hook-form';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPhone, faEnvelope, faLocationDot, faClock, faCircleCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
-
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
+import { submitEnquiry } from '../lib/db';
 
 function WhatsAppFab() {
   return (
@@ -46,6 +46,7 @@ const CONTACT_INFO = [
 
 export default function Contact() {
   const [showToast, setShowToast] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const {
     register,
     handleSubmit,
@@ -53,11 +54,22 @@ export default function Contact() {
     formState: { errors, isSubmitting },
   } = useForm();
 
-  const onSubmit = async () => {
-    await new Promise((r) => setTimeout(r, 800));
-    reset();
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 4000);
+  const onSubmit = async (data) => {
+    setSubmitError('');
+    try {
+      await submitEnquiry({
+        project_id: null,
+        name: data.name,
+        phone: data.phone,
+        email: data.email || '',
+        message: data.message || '',
+      });
+      reset();
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 4000);
+    } catch {
+      setSubmitError('Failed to send message. Please try again.');
+    }
   };
 
   return (
@@ -158,6 +170,10 @@ export default function Contact() {
                 />
                 {errors.message && <p className="text-xs text-red-500 mt-1">{errors.message.message}</p>}
               </div>
+
+              {submitError && (
+                <p className="text-xs text-red-500 bg-red-50 border border-red-200 rounded-btn px-3 py-2">{submitError}</p>
+              )}
 
               <button
                 type="submit"
