@@ -40,7 +40,7 @@ function mapDbProject(p) {
       status: s.status,
       biteNo: s.bite_no,
       direction: s.direction,
-      price: `₹${s.price_lakhs} Lakhs`,
+      price: `₹${s.price_lakhs} /sqr feet`,
       measurement: `${s.sqft} sqft`,
       details: s.details,
     })),
