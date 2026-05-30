@@ -88,7 +88,7 @@ export default function HeroSection() {
           transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
           className="text-white/80 font-inter text-lg sm:text-xl mb-10 max-w-2xl mx-auto leading-relaxed"
         >
-          Premium Residential Plots in Bengaluru — where your dream home begins.
+          where your dream home begins.
         </motion.p>
 
         <motion.div
